@@ -1,0 +1,98 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: api-gateway-service
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    gateway:
+      routes:
+        - id: authentication-service
+          uri: lb://AUTHENTICATION-SERVICE
+          predicates:
+            - Path=/smarte/authentication/**  # Routes all requests starting with /orders to the order-service
+          filters:
+#            - Retry=5  # Retry failed requests up to 5 times
+            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining} # Strip the prefix
+#            - name: CircuitBreaker
+#              args:
+#                name: gatewayService  # The name of the circuit breaker
+#                fallbackUri: forward:/api/fallback
+
+        - id: organization-service
+          uri: lb://ORGANIZATION-SERVICE
+          predicates:
+            - Path=/smarte/organization/**  # Routes all requests starting with /products to the product-service
+          filters:
+            - RewritePath=/smarte/organization/(?<remaining>.*), /${remaining} # Strip the prefix
+#            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+#
+#        - id: breaker-management-service
+#          uri: lb://BREAKER-MANAGEMENT-SERVICE
+#          predicates:
+#            - Path=/smarte/breaker/**  # Routes all requests starting with /products to the product-service
+#          filters:
+#            - RewritePath=/smarte/breaker/(?<remaining>.*), /${remaining} # Strip the prefix
+##            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+#
+#        - id: notification-audit-service
+#          uri: lb://NOTIFICATION-AUDIT-SERVICE
+#          predicates:
+#            - Path=/smarte/notification/**  # Routes all requests starting with /products to the product-service
+#          filters:
+#            - RewritePath=/smarte/notification/(?<remaining>.*), /${remaining} # Strip the prefix
+##            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+
+        - id: email-mqtt-client-service
+          uri: lb://EMAIL-MQTT-CLIENT-SERVICE
+          predicates:
+            - Path=/smarte/email/**  # Routes all requests starting with /products to the product-service
+          filters:
+            - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
+#            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    health-check-url-path: /actuator/health
+    health-check-interval-seconds: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      gatewayService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+
+
+#server:
+#  port: 8081
+#
+#spring:
+#  application:
+#    name: api-gateway
+#
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
