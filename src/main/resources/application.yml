@@ -56,7 +56,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: https://eureka-service-production.up.railway.app/
+      defaultZone: https://eureka-service-production.up.railway.app/eureka/
   instance:
     prefer-ip-address: true
     health-check-url-path: /actuator/health
