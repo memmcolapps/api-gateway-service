@@ -13,7 +13,7 @@ spring:
           uri: https://authentication-service-production-dbcd.up.railway.app
           # lb://AUTHENTICATION-SERVICE
           predicates:
-            - Path=/smarte/authentication/**  # Routes all requests starting with /orders to the order-service
+            - Path=/smarte/authentication/**
           filters:
 #            - Retry=5  # Retry failed requests up to 5 times
             - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
@@ -23,9 +23,10 @@ spring:
 #                fallbackUri: forward:/api/fallback
 
         - id: organization-service
-          uri: lb://ORGANIZATION-SERVICE
+          uri: organization-service-production-8e17.up.railway.app
+          # lb://ORGANIZATION-SERVICE
           predicates:
-            - Path=/smarte/organization/**  # Routes all requests starting with /products to the product-service
+            - Path=/smarte/organization/**  # Routes all requests starting with /smarte/organization to the organization-service
           filters:
             - RewritePath=/smarte/organization/(?<remaining>.*), /${remaining} # Strip the prefix
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
@@ -33,7 +34,7 @@ spring:
 #        - id: breaker-management-service
 #          uri: lb://BREAKER-MANAGEMENT-SERVICE
 #          predicates:
-#            - Path=/smarte/breaker/**  # Routes all requests starting with /products to the product-service
+#            - Path=/smarte/breaker/** 
 #          filters:
 #            - RewritePath=/smarte/breaker/(?<remaining>.*), /${remaining} # Strip the prefix
 ##            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
