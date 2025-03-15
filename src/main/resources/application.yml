@@ -15,7 +15,7 @@ spring:
             - Path=/smarte/authentication/**  # Routes all requests starting with /orders to the order-service
           filters:
 #            - Retry=5  # Retry failed requests up to 5 times
-            - RewritePath=/smarte/authentication/(?<remaining>.*), /api/${remaining}
+            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
 #            - name: CircuitBreaker
 #              args:
 #                name: gatewayService  # The name of the circuit breaker
