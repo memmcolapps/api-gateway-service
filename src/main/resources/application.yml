@@ -10,7 +10,8 @@ spring:
     gateway:
       routes:
         - id: authentication-service
-          uri: lb://AUTHENTICATION-SERVICE
+          uri: https://authentication-service-production-dbcd.up.railway.app
+          # lb://AUTHENTICATION-SERVICE
           predicates:
             - Path=/smarte/authentication/**  # Routes all requests starting with /orders to the order-service
           filters:
