@@ -23,7 +23,7 @@ spring:
 #                fallbackUri: forward:/api/fallback
 
         - id: organization-service
-          uri: organization-service-production-8e17.up.railway.app
+          uri: https://organization-service-production-8e17.up.railway.app
           # lb://ORGANIZATION-SERVICE
           predicates:
             - Path=/smarte/organization/**  # Routes all requests starting with /smarte/organization to the organization-service
