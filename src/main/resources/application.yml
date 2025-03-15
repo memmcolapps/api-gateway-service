@@ -48,7 +48,7 @@ spring:
 ##            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
         - id: email-mqtt-client-service
-          uri: lb://EMAIL-MQTT-CLIENT-SERVICE
+          uri: https://email-mqtt-service-production.up.railway.app
           predicates:
             - Path=/smarte/email/**  # Routes all requests starting with /products to the product-service
           filters:
