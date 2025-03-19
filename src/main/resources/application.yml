@@ -30,22 +30,6 @@ spring:
           filters:
             - RewritePath=/smarte/organization/(?<remaining>.*), /${remaining} # Strip the prefix
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
-#
-#        - id: breaker-management-service
-#          uri: lb://BREAKER-MANAGEMENT-SERVICE
-#          predicates:
-#            - Path=/smarte/breaker/** 
-#          filters:
-#            - RewritePath=/smarte/breaker/(?<remaining>.*), /${remaining} # Strip the prefix
-##            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
-#
-#        - id: notification-audit-service
-#          uri: lb://NOTIFICATION-AUDIT-SERVICE
-#          predicates:
-#            - Path=/smarte/notification/**  # Routes all requests starting with /products to the product-service
-#          filters:
-#            - RewritePath=/smarte/notification/(?<remaining>.*), /${remaining} # Strip the prefix
-##            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
         - id: email-mqtt-client-service
           uri: https://email-mqtt-service-production.up.railway.app
@@ -54,7 +38,12 @@ spring:
           filters:
             - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
-
+      globalcors:
+          corsConfigurations:
+            '[/**]':
+              allowedOrigins: "*"
+              allowedMethods: "*"
+              allowedHeaders: "*"
 eureka:
   client:
     service-url:
