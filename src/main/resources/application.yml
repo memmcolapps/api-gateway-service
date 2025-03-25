@@ -10,7 +10,8 @@ spring:
     gateway:
       routes:
         - id: authentication-service
-          uri: https://authentication-service-production-dbcd.up.railway.app
+          uri: https://authentication-service-production-e98d.up.railway.app
+          # https://authentication-service-production-dbcd.up.railway.app
           # lb://AUTHENTICATION-SERVICE
           predicates:
             - Path=/smarte/authentication/**
@@ -23,7 +24,8 @@ spring:
 #                fallbackUri: forward:/api/fallback
 
         - id: organization-service
-          uri: https://organization-service-production-8e17.up.railway.app
+          uri: https://organization-service-production-2c3e.up.railway.app
+          # https://organization-service-production-8e17.up.railway.app
           # lb://ORGANIZATION-SERVICE
           predicates:
             - Path=/smarte/organization/**  # Routes all requests starting with /smarte/organization to the organization-service
@@ -32,7 +34,8 @@ spring:
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
         - id: email-mqtt-client-service
-          uri: https://email-mqtt-service-production.up.railway.app
+          uri: https://email-mqtt-client-service-production-e14b.up.railway.app
+          # https://email-mqtt-service-production.up.railway.app
           predicates:
             - Path=/smarte/email/**  # Routes all requests starting with /products to the product-service
           filters:
