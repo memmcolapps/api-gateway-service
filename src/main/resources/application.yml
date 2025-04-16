@@ -10,8 +10,9 @@ spring:
     gateway:
       routes:
         - id: authentication-service
-          uri: https://authentication-service-production-e98d.up.railway.app
-          # https://authentication-service-production-dbcd.up.railway.app
+          uri: lb://AUTHENTICATION-SERVICE
+#          https://authentication-service-production-e98d.up.railway.app #Memmcolapp railway account
+          # https://authentication-service-production-dbcd.up.railway.app #my railway account
           # lb://AUTHENTICATION-SERVICE
           predicates:
             - Path=/smarte/authentication/**
@@ -24,7 +25,8 @@ spring:
 #                fallbackUri: forward:/api/fallback
 
         - id: organization-service
-          uri: https://organization-service-production-2c3e.up.railway.app
+          uri: lb://ORGANIZATION-SERVICE
+          # https://organization-service-production-2c3e.up.railway.app
           # https://organization-service-production-8e17.up.railway.app
           # lb://ORGANIZATION-SERVICE
           predicates:
@@ -34,10 +36,11 @@ spring:
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
         - id: email-mqtt-client-service
-          uri: https://email-mqtt-client-service-production-e14b.up.railway.app
+          uri: lb://EMAIL-MQTT-CLIENT-SERVICE
+          # https://email-mqtt-client-service-production-e14b.up.railway.app
           # https://email-mqtt-service-production.up.railway.app
           predicates:
-            - Path=/smarte/email/**  # Routes all requests starting with /products to the product-service
+            - Path=/smarte/email/**  # Routes all requests starting with /email to the product-service
           filters:
             - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
@@ -50,7 +53,8 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: https://eureka-service-production-6595.up.railway.app/eureka/
+      defaultZone: http://localhost:8761/eureka/
+      # https://eureka-service-production-6595.up.railway.app/eureka/
       # https://eureka-service-production.up.railway.app/eureka/
   instance:
     prefer-ip-address: true
