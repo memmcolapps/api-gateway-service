@@ -44,6 +44,14 @@ spring:
           filters:
             - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+
+        - id: gridflex-authentication-service
+          uri: lb://GRIDFLEX-AUTHENTICATION-SERVICE
+          predicates:
+            - Path=/grid-flex/v1/api/auth/**  # Routes all requests starting with /email to the product-service
+          filters:
+            - RewritePath=/grid-flex/v1/api/auth/(?<remaining>.*), /${remaining} # Strip the prefix
+      #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
       globalcors:
           corsConfigurations:
             '[/**]':
