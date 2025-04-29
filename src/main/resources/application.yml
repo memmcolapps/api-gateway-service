@@ -1,5 +1,10 @@
 server:
   port: 8081
+  ssl:
+    enabled: true
+    key-store: classpath:serverkeystore.p12
+    key-store-password: Passw0rd
+    key-store-type: PKCS12
 
 spring:
   application:
@@ -8,6 +13,8 @@ spring:
     allow-bean-definition-overriding: true
   cloud:
     gateway:
+#      default-filters:
+#        - AddResponseHeader=Strict-Transport-Security, max-age=60 ; includeSubDomains
       routes:
         - id: authentication-service
           uri: lb://AUTHENTICATION-SERVICE
@@ -45,13 +52,15 @@ spring:
             - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
-        - id: gridflex-authentication-service
-          uri: lb://GRIDFLEX-AUTHENTICATION-SERVICE
+        - id: gridflex-backend-service
+          uri: lb://GRIDFLEX-BACKEND-SERVICE
           predicates:
-            - Path=/grid-flex/v1/api/auth/**  # Routes all requests starting with /email to the product-service
+            - Path=/grid-flex/v1/api/**
           filters:
-            - RewritePath=/grid-flex/v1/api/auth/(?<remaining>.*), /${remaining} # Strip the prefix
+            - RewritePath=/grid-flex/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
       #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+
+
       globalcors:
           corsConfigurations:
             '[/**]':
