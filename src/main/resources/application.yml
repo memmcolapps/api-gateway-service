@@ -2,9 +2,10 @@ server:
   port: 8081
   ssl:
     enabled: true
-    key-store: classpath:serverkeystore.p12
+    key-store: classpath:STAR.memmserve.com.p12
     key-store-password: Passw0rd
     key-store-type: PKCS12
+    key-alias: my-api-ssl
 
 spring:
   application:
@@ -16,36 +17,30 @@ spring:
 #      default-filters:
 #        - AddResponseHeader=Strict-Transport-Security, max-age=60 ; includeSubDomains
       routes:
-        - id: authentication-service
-          uri: lb://AUTHENTICATION-SERVICE
-#          https://authentication-service-production-e98d.up.railway.app #Memmcolapp railway account
-          # https://authentication-service-production-dbcd.up.railway.app #my railway account
-          # lb://AUTHENTICATION-SERVICE
-          predicates:
-            - Path=/smarte/authentication/**
-          filters:
-#            - Retry=5  # Retry failed requests up to 5 times
-            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
-#            - name: CircuitBreaker
-#              args:
-#                name: gatewayService  # The name of the circuit breaker
-#                fallbackUri: forward:/api/fallback
+#        - id: authentication-service
+#          uri: lb://AUTHENTICATION-SERVICE
+##          https://authentication-service-production-e98d.up.railway.app #Memmcolapp railway account
+#          # https://authentication-service-production-dbcd.up.railway.app #my railway account
+#          # lb://AUTHENTICATION-SERVICE
+#          predicates:
+#            - Path=/smarte/authentication/**
+#          filters:
+##            - Retry=5  # Retry failed requests up to 5 times
+#            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
+##            - name: CircuitBreaker
+##              args:
+##                name: gatewayService  # The name of the circuit breaker
+##                fallbackUri: forward:/api/fallback
 
-        - id: organization-service
-          uri: lb://ORGANIZATION-SERVICE
-          # https://organization-service-production-2c3e.up.railway.app
-          # https://organization-service-production-8e17.up.railway.app
-          # lb://ORGANIZATION-SERVICE
+        - id: smarte-backend-service
+          uri: lb://SMARTE-BACKEND-SERVICE
           predicates:
-            - Path=/smarte/organization/**  # Routes all requests starting with /smarte/organization to the organization-service
+            - Path=/smarte/v1/api/**  # Routes all requests starting with /smarte/organization to the organization-service
           filters:
-            - RewritePath=/smarte/organization/(?<remaining>.*), /${remaining} # Strip the prefix
-#            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+            - RewritePath=/smarte/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
 
         - id: email-mqtt-client-service
           uri: lb://EMAIL-MQTT-CLIENT-SERVICE
-          # https://email-mqtt-client-service-production-e14b.up.railway.app
-          # https://email-mqtt-service-production.up.railway.app
           predicates:
             - Path=/smarte/email/**  # Routes all requests starting with /email to the product-service
           filters:
