@@ -30,7 +30,7 @@ jobs:
       - name: Run app on server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            pkill -f 'java -jar' || true
+            pkill -f 'api-gateway-service.jar' || true
             nohup java -jar /opt/java-webservices/api-gateway-service.jar > /opt/java-webservices/api-gataway.log 2>&1 &
           EOF
 
