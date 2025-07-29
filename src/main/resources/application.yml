@@ -14,23 +14,7 @@ spring:
     allow-bean-definition-overriding: true
   cloud:
     gateway:
-#      default-filters:
-#        - AddResponseHeader=Strict-Transport-Security, max-age=60 ; includeSubDomains
       routes:
-#        - id: authentication-service
-#          uri: lb://AUTHENTICATION-SERVICE
-##          https://authentication-service-production-e98d.up.railway.app #Memmcolapp railway account
-#          # https://authentication-service-production-dbcd.up.railway.app #my railway account
-#          # lb://AUTHENTICATION-SERVICE
-#          predicates:
-#            - Path=/smarte/authentication/**
-#          filters:
-##            - Retry=5  # Retry failed requests up to 5 times
-#            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
-##            - name: CircuitBreaker
-##              args:
-##                name: gatewayService  # The name of the circuit breaker
-##                fallbackUri: forward:/api/fallback
 
         - id: smarte-backend-service
           uri: lb://SMARTE-BACKEND-SERVICE
@@ -113,3 +97,19 @@ resilience4j:
 #  client:
 #    service-url:
 #      defaultZone: http://localhost:8761/eureka/
+
+
+#        - id: authentication-service
+#          uri: lb://AUTHENTICATION-SERVICE
+##          https://authentication-service-production-e98d.up.railway.app #Memmcolapp railway account
+#          # https://authentication-service-production-dbcd.up.railway.app #my railway account
+#          # lb://AUTHENTICATION-SERVICE
+#          predicates:
+#            - Path=/smarte/authentication/**
+#          filters:
+##            - Retry=5  # Retry failed requests up to 5 times
+#            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
+##            - name: CircuitBreaker
+##              args:
+##                name: gatewayService  # The name of the circuit breaker
+##                fallbackUri: forward:/api/fallback
