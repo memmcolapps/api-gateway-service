@@ -52,8 +52,14 @@ spring:
           predicates:
             - Path=/grid-flex/v1/api/**
           filters:
-            - RewritePath=/grid-flex/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
-      #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+            - RewritePath=/grid-flex/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: gridflex-backend-service
+
+        - id: portal-onboard-service
+          uri: lb://PORTAL-ONBOARD-SERVICE
+          predicates:
+            - Path=/portal/onboard/v1/api/**
+          filters:
+            - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
 
 
       globalcors:
