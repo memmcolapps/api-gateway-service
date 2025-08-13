@@ -46,7 +46,7 @@ spring:
             - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix - id: portal-onboard-service
             -
         - id: momasradio
-          uri: lb://MOMAS-RADIO
+          uri: lb://MOMASRADIO
           predicates:
             - Path=/momas/radio/**
           filters:
