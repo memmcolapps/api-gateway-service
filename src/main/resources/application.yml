@@ -43,7 +43,14 @@ spring:
           predicates:
             - Path=/portal/onboard/v1/api/**
           filters:
-            - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
+            - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix - id: portal-onboard-service
+            -
+        - id: momasradio
+          uri: lb://MOMAS-RADIO
+          predicates:
+            - Path=/momas/radio/**
+          filters:
+            - RewritePath=/momas/radio/(?<remaining>.*), /${remaining} # Strip the prefix
 
 
       globalcors:
