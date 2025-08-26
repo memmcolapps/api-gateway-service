@@ -19,14 +19,14 @@ spring:
         - id: smarte-backend-service
           uri: lb://SMARTE-BACKEND-SERVICE
           predicates:
-            - Path=/smarte/v1/api/**  # Routes all requests starting with /smarte/organization to the organization-service
+            - Path=/smarte/v1/api/**  # Strip the prefix- id: smarte-backend-service
           filters:
             - RewritePath=/smarte/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
 
         - id: email-mqtt-client-service
           uri: lb://EMAIL-MQTT-CLIENT-SERVICE
           predicates:
-            - Path=/smarte/email/**  # Routes all requests starting with /email to the product-service
+            - Path=/smarte/email/**  # Strip the prefix- id: email-mqtt-client-service
           filters:
             - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
 #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
@@ -43,14 +43,20 @@ spring:
           predicates:
             - Path=/portal/onboard/v1/api/**
           filters:
-            - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix - id: portal-onboard-service
+            -
+        - id: hes
+          uri: lb://HES
+          predicates:
+            - Path=/hes/**
+          filters:
+            - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
         - id: tracker-backend
           uri: http://localhost:3000
           predicates:
             - Path=/momas/radio/**
           filters:
-            - RewritePath=/momas/radio/(?<remaining>.*), /${remaining} # Strip the prefix
+            - RewritePath=/momas/radio/(?<remaining>.*), /${remaining} # Strip the prefix - tracker-backend
 
 
       globalcors:
