@@ -1,0 +1,133 @@
+#server:
+#  port: 8081
+#  ssl:
+#    enabled: true
+#    key-store: classpath:STAR_memmserve_com.p12
+#    key-store-password: Passw0rd!@#)(*
+#    key-store-type: PKCS12
+##    key-alias: my-api-ssl
+
+spring:
+  application:
+    name: api-gateway-service
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    gateway:
+      routes:
+
+        - id: smarte-backend-service
+          uri: lb://SMARTE-BACKEND-SERVICE
+          predicates:
+            - Path=/smarte/v1/api/**  # Strip the prefix- id: smarte-backend-service
+          filters:
+            - RewritePath=/smarte/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
+
+        - id: email-mqtt-client-service
+          uri: lb://EMAIL-MQTT-CLIENT-SERVICE
+          predicates:
+            - Path=/smarte/email/**  # Strip the prefix- id: email-mqtt-client-service
+          filters:
+            - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
+        #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
+
+        - id: gridflex-backend-service
+          uri: lb://GRIDFLEX-BACKEND-SERVICE
+          predicates:
+            - Path=/grid-flex/v1/api/**
+          filters:
+            - RewritePath=/grid-flex/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: gridflex-backend-service
+
+        - id: portal-onboard-service
+          uri: lb://PORTAL-ONBOARD-SERVICE
+          predicates:
+            - Path=/portal/onboard/v1/api/**
+          filters:
+            - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: portal-onboard-service
+
+        - id: hes-service-dev
+          uri: lb://HES-SERVICE-DEV
+          predicates:
+            - Path=/hes/**
+          filters:
+            - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
+
+        - id: tracker-backend
+          uri: http://localhost:3000
+          predicates:
+            - Path=/momas/radio/**
+          filters:
+            - RewritePath=/momas/radio/(?<remaining>.*), /${remaining} # Strip the prefix - tracker-backend
+
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+      # https://eureka-service-production-6595.up.railway.app/eureka/
+      # https://eureka-service-production.up.railway.app/eureka/
+  instance:
+    prefer-ip-address: true                # Register using IP instead of hostname
+    ip-address: ${spring.cloud.client.ip-address}  # Auto-detects service IP
+    instance-id: ${spring.application.name}:${server.port}
+    metadata-map:
+      management.port: ${management.server.port:${server.port}}  # Ensure management port is included
+
+management:
+  server:
+    port: ${server.port}  # Use same port for actuator unless you want a separate port
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      gatewayService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+
+
+#server:
+#  port: 8081
+#
+#spring:
+#  application:
+#    name: api-gateway
+#
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka/
+
+
+#        - id: authentication-service
+#          uri: lb://AUTHENTICATION-SERVICE
+##          https://authentication-service-production-e98d.up.railway.app #Memmcolapp railway account
+#          # https://authentication-service-production-dbcd.up.railway.app #my railway account
+#          # lb://AUTHENTICATION-SERVICE
+#          predicates:
+#            - Path=/smarte/authentication/**
+#          filters:
+##            - Retry=5  # Retry failed requests up to 5 times
+#            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
+##            - name: CircuitBreaker
+##              args:
+##                name: gatewayService  # The name of the circuit breaker
+##                fallbackUri: forward:/api/fallback
