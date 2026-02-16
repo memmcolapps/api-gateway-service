@@ -52,6 +52,24 @@ public class ApiGatewayServiceApplication {
         };
     }
 
+    @Bean
+    public GlobalFilter forwardedHeaderFilter() {
+        return (exchange, chain) -> {
+            String clientIp = exchange.getRequest().getRemoteAddress() != null
+                    ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
+                    : null;
+
+            if (clientIp != null) {
+                var modifiedRequest = exchange.getRequest().mutate()
+                        .header("X-Forwarded-For", clientIp)
+                        .build();
+                return chain.filter(exchange.mutate().request(modifiedRequest).build());
+            }
+            return chain.filter(exchange);
+        };
+    }
+
+
 
 }
 
