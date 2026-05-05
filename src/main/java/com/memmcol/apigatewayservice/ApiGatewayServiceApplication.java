@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatusCode;
 import reactor.core.publisher.Mono;
 import org.springframework.http.HttpStatus;
 
-//@EnableCircuitBreaker
 @SpringBootApplication
 @EnableDiscoveryClient
 public class ApiGatewayServiceApplication {
