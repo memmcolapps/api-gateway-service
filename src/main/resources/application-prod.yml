@@ -31,19 +31,28 @@ spring:
             - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
         #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
-        - id: gridflex-backend-service
+
+        - id: gridflex-backend-service-v1
           uri: lb://GRIDFLEX-BACKEND-SERVICE
           predicates:
             - Path=/grid-flex/v1/api/**
           filters:
             - RewritePath=/grid-flex/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: gridflex-backend-service
 
+        # Odyssey call route
+        - id: gridflex-backend-service-v2
+          uri: lb://GRIDFLEX-BACKEND-SERVICE
+          predicates:
+            - Path=/api/v1/**
+          filters:
+            - RewritePath=/api/v1/(?<remaining>.*), /${remaining}
+
         - id: portal-onboard-service
           uri: lb://PORTAL-ONBOARD-SERVICE
           predicates:
             - Path=/portal/onboard/v1/api/**
           filters:
-            - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: portal-onboard-service
+            - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: portal-onboard-servic
 
         - id: hes-service-dev
           uri: lb://HES-SERVICE-DEV
