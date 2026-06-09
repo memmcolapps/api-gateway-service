@@ -60,10 +60,19 @@ spring:
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
-        - id: epailsecurity
-          uri: http://127.0.0.1:5050
+        - id: epailsecurity-v1
+          uri: https://epailsecurity.memmserve.com
           predicates:
-            - Host=https://epailsecurity.memmserve.com
+            - Path=/epailsecuritydomain/**
+          filters:
+              - RewritePath=/epailsecuritydomain/(?<segment>.*), /${segment}
+
+        - id: epailsecurity-v2
+          uri: http://localhost:5050
+          predicates:
+            - Path=/epailsecurity/**
+          filters:
+            - RewritePath=/epailsecurity/(?<segment>.*), /${segment}
 
         - id: tracker-backend
           uri: http://localhost:3000
