@@ -63,7 +63,7 @@ spring:
         - id: epailsecurity
           uri: http://127.0.0.1:5050
           predicates:
-            - Host=epailsecurity.memmserve.com
+            - Host=https://epailsecurity.memmserve.com
 
         - id: tracker-backend
           uri: http://localhost:3000
