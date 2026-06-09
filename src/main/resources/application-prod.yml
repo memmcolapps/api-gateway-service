@@ -31,7 +31,6 @@ spring:
             - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
         #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
-
         - id: gridflex-backend-service-v1
           uri: lb://GRIDFLEX-BACKEND-SERVICE
           predicates:
@@ -60,6 +59,11 @@ spring:
             - Path=/hes/**
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
+
+        - id: epailsecurity
+          uri: http://127.0.0.1:5050
+          predicates:
+            - Host=https://epailsecurity.memmserve.com
 
         - id: tracker-backend
           uri: http://localhost:3000
