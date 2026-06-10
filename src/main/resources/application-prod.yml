@@ -60,14 +60,14 @@ spring:
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
-        - id: epailsecurity-v1
-          uri: https://epailsecurity.memmserve.com
-          predicates:
-            - Path=/epailsecuritydomain/**
-          filters:
-              - RewritePath=/epailsecuritydomain/(?<segment>.*), /${segment}
+#        - id: epailsecurity-v1
+#          uri: https://epailsecurity.memmserve.com
+#          predicates:
+#            - Path=/epailsecuritydomain/**
+#          filters:
+#              - RewritePath=/epailsecuritydomain/(?<segment>.*), /${segment}
 
-        - id: epailsecurity-v2
+        - id: epailsecurity-v1
           uri: http://localhost:5050
           predicates:
             - Path=/epailsecurity/**
