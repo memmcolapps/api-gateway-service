@@ -14,8 +14,9 @@ spring:
     allow-bean-definition-overriding: true
   cloud:
     gateway:
+      forwarded:
+        enabled: true
       routes:
-
         - id: smarte-backend-service
           uri: lb://SMARTE-BACKEND-SERVICE
           predicates:
@@ -49,7 +50,7 @@ spring:
         - id: swagger-ui
           uri: lb://GRIDFLEX-BACKEND-SERVICE
           predicates:
-            - Path=/swagger-ui/**,/v3/api-docs/**,/swagger-ui.html
+            - Path=/swagger-ui/**,/gridflex/api-docs/**,/swagger-ui.html
 
         - id: portal-onboard-service
           uri: lb://PORTAL-ONBOARD-SERVICE
