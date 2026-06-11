@@ -14,8 +14,9 @@ spring:
     allow-bean-definition-overriding: true
   cloud:
     gateway:
+      forwarded:
+        enabled: true
       routes:
-
         - id: smarte-backend-service
           uri: lb://SMARTE-BACKEND-SERVICE
           predicates:
