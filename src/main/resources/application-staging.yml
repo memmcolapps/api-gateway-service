@@ -46,6 +46,11 @@ spring:
           filters:
             - RewritePath=/api/v1/(?<remaining>.*), /${remaining}
 
+        - id: swagger-ui
+          uri: lb://GRIDFLEX-BACKEND-SERVICE
+          predicates:
+            - Path=/swagger-ui/**,/v3/api-docs/**,/swagger-ui.html
+
         - id: portal-onboard-service
           uri: lb://PORTAL-ONBOARD-SERVICE
           predicates:
