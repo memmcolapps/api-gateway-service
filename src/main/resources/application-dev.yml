@@ -16,7 +16,6 @@ spring:
   cloud:
     gateway:
       routes:
-
         - id: smarte-backend-service
           uri: lb://SMARTE-BACKEND-SERVICE
           predicates:
