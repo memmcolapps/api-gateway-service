@@ -44,7 +44,12 @@ spring:
           predicates:
             - Path=/api/v1/**
           filters:
-            - RewritePath=/api/v1/(?<remaining>.*), /${remaining}
+            - RewritePath=/api/v1/(?<segment>.*), /${segment}
+
+        - id: swagger-ui
+          uri: lb://GRIDFLEX-BACKEND-SERVICE
+          predicates:
+            - Path=/swagger-ui/**,/v3/api-docs/**,/swagger-ui.html
 
         - id: portal-onboard-service
           uri: lb://PORTAL-ONBOARD-SERVICE
@@ -61,13 +66,6 @@ spring:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
         - id: epailsecurity-v1
-          uri: https://epailsecurity.memmserve.com
-          predicates:
-            - Path=/epailsecuritydomain/**
-          filters:
-              - RewritePath=/epailsecuritydomain/(?<segment>.*), /${segment}
-
-        - id: epailsecurity-v2
           uri: http://localhost:5050
           predicates:
             - Path=/epailsecurity/**

@@ -3,7 +3,7 @@ server:
   port: 8081
 #  ssl:
 #    enabled: true
-#    key-store: classpath:STAR_memmserve_com.p12
+#    key-store: classpath:STAR_old.p12
 #    key-store-password: Passw0rd!@#)(*
 #    key-store-type: PKCS12
 ##    key-alias: my-api-ssl
@@ -46,6 +46,18 @@ spring:
             - Path=/api/v1/**
           filters:
             - RewritePath=/api/v1/(?<remaining>.*), /${remaining}
+
+        - id: swagger-ui
+          uri: lb://GRIDFLEX-BACKEND-SERVICE
+          predicates:
+            - Path=/swagger-ui/**,/v3/api-docs/**,/swagger-ui.html
+
+#        - id: admin-swagger
+#          uri: lb://GRIDFLEX-BACKEND-SERVICE
+#          predicates:
+#            - Path=/admin/swagger-ui/**,/admin/v3/api-docs/**
+#          filters:
+#            - RewritePath=/admin/(?<segment>.*), /${segment}
 
         - id: portal-onboard-service
           uri: lb://PORTAL-ONBOARD-SERVICE
