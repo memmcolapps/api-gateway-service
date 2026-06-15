@@ -43,3 +43,4 @@ public class ClientIpFilter implements GlobalFilter {
 
         return chain.filter(exchange.mutate().request(mutatedRequest).build());
     }
+}
