@@ -1,5 +1,5 @@
 server:
-  port: 443
+  port: 8081
   ssl:
     enabled: true
     key-store: classpath:STAR_memmserve_com.p12
