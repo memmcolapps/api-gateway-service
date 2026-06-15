@@ -29,6 +29,7 @@ public class ClientIpFilter implements GlobalFilter {
 
         log.info("Remote IP (TCP): {}", ip);
         log.info("X-Forwarded-For (incoming): {}", forwarded);
+        log.info("<<<<<<X-Forwarded-For (incoming): {}>>>>>>");
 
         ServerHttpRequest mutatedRequest = exchange.getRequest()
                 .mutate()
