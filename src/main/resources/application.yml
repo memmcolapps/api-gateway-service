@@ -1,6 +1,5 @@
 server:
   port: 443
-  #8081
   forward-headers-strategy: framework
 #  ssl:
 #    enabled: true
