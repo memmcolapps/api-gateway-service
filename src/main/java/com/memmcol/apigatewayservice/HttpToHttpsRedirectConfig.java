@@ -21,7 +21,7 @@ public class HttpToHttpsRedirectConfig {
         factory.addServerCustomizers(httpServer -> {
             // Start a separate HTTP redirect server on port 2020
             HttpServer redirectHttpServer = HttpServer.create()
-                    .port(8080)
+                    .port(80)
                     .route(routes ->
                             routes.route(req -> true, (request, response) -> {
                                 String hostHeader = request.requestHeaders().get("Host");
