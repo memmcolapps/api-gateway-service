@@ -21,19 +21,26 @@ public class ClientIpFilter implements GlobalFilter {
 
         var request = exchange.getRequest();
 
-        String ip = exchange.getRequest().getRemoteAddress() != null
+        String clientIp = exchange.getRequest().getRemoteAddress() != null
                 ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
                 : "unknown";
 
+//        String clientIp =  exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
+
         String forwarded = request.getHeaders().getFirst("X-Forwarded-For");
 
-        log.info("Remote IP (TCP): {}", ip);
+        log.info("Remote IP (TCP): {}", clientIp);
         log.info("X-Forwarded-For (incoming): {}", forwarded);
 
         ServerHttpRequest mutatedRequest = exchange.getRequest()
                 .mutate()
-                .header("X-Real-IP", ip)
+                .headers(h -> {
+                    h.remove("X-Forwarded-For");
+                    h.remove("X-Real-IP");
+                    h.set("X-Client-IP", clientIp);
+                })
                 .build();
 
         return chain.filter(exchange.mutate().request(mutatedRequest).build());
     }
+}
