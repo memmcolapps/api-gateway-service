@@ -1,5 +1,7 @@
 server:
   port: 443
+  forward-headers-strategy: native
+
   ssl:
     enabled: true
     key-store: classpath:STAR_memmserve_com.p12
@@ -16,6 +18,8 @@ spring:
     gateway:
       forwarded:
         enabled: true
+      default-filters:
+        - AddRequestHeader=X-Gateway,true
       routes:
         - id: smarte-backend-service
           uri: lb://SMARTE-BACKEND-SERVICE
