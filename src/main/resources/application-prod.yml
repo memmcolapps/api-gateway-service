@@ -66,7 +66,7 @@ spring:
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
-        - id: epailsecurity-v1
+        - id: epailsecurity
           uri: http://localhost:5050
           predicates:
             - Path=/epailsecurity/**
