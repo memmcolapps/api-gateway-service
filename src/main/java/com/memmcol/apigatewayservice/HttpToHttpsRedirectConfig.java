@@ -10,7 +10,7 @@
 //import reactor.netty.http.server.HttpServer;
 //
 //
-//@Profile({"prod", "staging"})
+//@Profile({"prod"})
 //@Configuration
 //public class HttpToHttpsRedirectConfig {
 //
@@ -28,9 +28,9 @@
 //                                String redirectHost;
 //
 //                                if (hostHeader.contains(":")) {
-//                                    redirectHost = hostHeader.replaceFirst(":\\d+", ":443");
+//                                    redirectHost = hostHeader.replaceFirst(":\\d+", ":8081");
 //                                } else {
-//                                    redirectHost = hostHeader + ":443";
+//                                    redirectHost = hostHeader + ":8081";
 //                                }
 //
 //                                String redirectUrl = "https://" + redirectHost + request.uri();

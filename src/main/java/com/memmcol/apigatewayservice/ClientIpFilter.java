@@ -16,40 +16,78 @@ public class ClientIpFilter implements GlobalFilter {
             LoggerFactory.getLogger(ClientIpFilter.class);
 
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+    public Mono<Void> filter(ServerWebExchange exchange,
+                             GatewayFilterChain chain) {
 
-        var request = exchange.getRequest();
-
-        String forwardedFor = request.getHeaders().getFirst("X-Forwarded-For");
-        String realIp = request.getHeaders().getFirst("X-Real-IP");
+        String xForwardedFor = exchange.getRequest()
+                .getHeaders()
+                .getFirst("X-Forwarded-For");
 
         String clientIp;
 
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            clientIp = forwardedFor.split(",")[0].trim();
-        } else if (realIp != null) {
-            clientIp = realIp;
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            clientIp = xForwardedFor.split(",")[0].trim();
         } else {
-            var remote = request.getRemoteAddress();
-            clientIp = (remote != null && remote.getAddress() != null)
-                    ? remote.getAddress().getHostAddress()
-                    : "unknown";
+            clientIp = exchange.getRequest()
+                    .getRemoteAddress()
+                    .getAddress()
+                    .getHostAddress();
         }
 
-        log.info("Client IP resolved: {}", clientIp);
-        log.info("X-Forwarded-For: {}", forwardedFor);
-        log.info("RemoteAddress: {}", request.getRemoteAddress());
-
-        ServerHttpRequest mutatedRequest = request.mutate()
+        ServerHttpRequest mutatedRequest = exchange.getRequest()
+                .mutate()
                 .header("X-Client-IP", clientIp)
                 .build();
 
-        return chain.filter(exchange.mutate().request(mutatedRequest).build());
+        log.info("Resolved Client IP: {}", clientIp);
+
+        return chain.filter(exchange.mutate()
+                .request(mutatedRequest)
+                .build());
     }
 }
 
+//@Component
+//public class ClientIpFilter implements GlobalFilter {
+//
+//    private static final Logger log =
+//            LoggerFactory.getLogger(ClientIpFilter.class);
+//
+//    @Override
+//    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+//
+//        var request = exchange.getRequest();
+//
+//        String forwardedFor = request.getHeaders().getFirst("X-Forwarded-For");
+//        String realIp = request.getHeaders().getFirst("X-Real-IP");
+//
+//        String clientIp;
+//
+//        if (forwardedFor != null && !forwardedFor.isBlank()) {
+//            clientIp = forwardedFor.split(",")[0].trim();
+//        } else if (realIp != null) {
+//            clientIp = realIp;
+//        } else {
+//            var remote = request.getRemoteAddress();
+//            clientIp = (remote != null && remote.getAddress() != null)
+//                    ? remote.getAddress().getHostAddress()
+//                    : "unknown";
+//        }
+//
+//        log.info("Client IP resolved: {}", clientIp);
+//        log.info("X-Forwarded-For: {}", forwardedFor);
+//        log.info("RemoteAddress: {}", request.getRemoteAddress());
+//
+//        ServerHttpRequest mutatedRequest = request.mutate()
+//                .header("X-Client-IP", clientIp)
+//                .build();
+//
+//        return chain.filter(exchange.mutate().request(mutatedRequest).build());
+//    }
+//}
 
 
+///-------------------------
 //@Component
 //public class ClientIpFilter implements GlobalFilter {
 //

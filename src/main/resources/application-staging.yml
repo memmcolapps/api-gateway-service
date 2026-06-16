@@ -1,6 +1,6 @@
 server:
   port: 443
-  forward-headers-strategy: framework
+  forward-headers-strategy: native
 
   ssl:
     enabled: true
@@ -18,6 +18,8 @@ spring:
     gateway:
       forwarded:
         enabled: true
+      default-filters:
+        - AddRequestHeader=X-Gateway,true
       routes:
         - id: smarte-backend-service
           uri: lb://SMARTE-BACKEND-SERVICE
