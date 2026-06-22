@@ -18,6 +18,9 @@
 //
 //        URI uri = request.getURI();
 //
+//        System.out.println("=============:::1 "+uri);
+//        System.out.println("=============:::2 "+request.getRemoteAddress());
+//
 //        String httpsUrl = "https://" + uri.getHost() + uri.getRawPath();
 //
 //        response.setStatusCode(HttpStatus.MOVED_PERMANENTLY);

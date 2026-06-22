@@ -1,5 +1,6 @@
 package com.memmcol.apigatewayservice;
 
+import jakarta.ws.rs.core.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -121,4 +122,56 @@ public class ClientIpFilter implements GlobalFilter {
 //
 //        return chain.filter(exchange.mutate().request(mutatedRequest).build());
 //    }
+//}
+
+///--------------------------
+
+//@GET
+//@Produces("application/json,application/xml")
+//@Path("{merchantname}/{transactionreference}/")
+//public Transaction verifyTransaction(@Context HttpServletRequest headers,
+//                                     @HeaderParam("secretKey") String secretKey,
+//                                     @PathParam("transactionreference") PathSegment transactionreference,
+//                                     @QueryParam("postpaid") boolean customerType,
+//                                     @PathParam("merchantname") String merchantname,
+//                                     @QueryParam("isDualMode") boolean isDualMode) throws WebAppException {
+//    //TODO return proper representation object
+//    Transaction trans = new Transaction();
+//    Customer cust = new Customer();
+//    String transReference = transactionreference.getPath();
+//    String referenceType = "transref";
+////        String referenceType = transactionreference.getMatrixParameters().getFirst(Customer.CUSTOMER_REFERENCE_TYPE_VALUE);
+//    String customerTypeValue = Customer.CUSTOMER_TYPE_PRE_PAID;
+//    // System.out.println("headers is "+ headers.getRemoteAddr());
+//    try {
+//        checkAuthorization(merchantname, headers.getRemoteAddr(),secretKey);
+//
+//        if (customerType) {
+//            customerTypeValue = Customer.CUSTOMER_TYPE_POST_PAID;
+//            referenceType = "receiptno";
+//        }
+//
+//        if (referenceType.equalsIgnoreCase(Transaction.TRANSACTION_SEARCH_BY_RECEIPT_NUMBER)) {
+//            trans = trans.getPaymentReference(customerTypeValue, transReference, "R", merchantname, isDualMode);
+//        } else if (referenceType.equalsIgnoreCase(Transaction.TRANSACTION_SEARCH_BY_TRANS_REF)) {
+//
+//            trans = trans.getPaymentReference(customerTypeValue, transReference, "T", merchantname, isDualMode);
+//
+//        } else {
+//            throw new WebApplicationException(Response.Status.NOT_FOUND);
+//        }
+//
+//    } catch (WebApplicationException ex) {
+//        trans.setResponsecode("99");
+//        trans.setResponsedesc(ex.getResponse().getEntity().toString());
+//        throw ex;
+//    } catch (Exception ex) {
+//        ex.printStackTrace();
+//        trans.setResponsecode("99");
+//        trans.setResponsedesc("An unexpected error occurred: " + ex.getMessage());
+////            throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+////                                                      .entity("An unexpected error occurred")
+////                                                      .build());
+//    }
+//    return trans;
 //}
