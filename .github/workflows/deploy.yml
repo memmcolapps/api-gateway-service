@@ -77,7 +77,7 @@ jobs:
             $SERVER:$REMOTE_PATH
           
           echo "Writing env file..."
-          ssh -o StrictHostKeyChecking=no $SERVER "cat > /${{ secrets.ENV_FILE }}/gridsec.env" << EOF
+          ssh -o StrictHostKeyChecking=no $SERVER "cat > /${{ secrets.ENV_FILE }}/apigridsec.env" << EOF
           
           EUREKA_ADDRESS="${{ secrets.EUREKA_ADDRESS }}"
           EUREKA_PORT="${{ secrets.EUREKA_PORT }}"
@@ -85,7 +85,7 @@ jobs:
           ENV="${{ secrets.ENV_FILE }}"
           EOF
           
-          ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/gridsec.env"
+          ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/apigridsec.env"
 
           echo "Deploying (safe SSH execution)..."
           ssh -o StrictHostKeyChecking=no $SERVER 'bash -s' << 'EOF'
@@ -106,7 +106,7 @@ jobs:
             echo "Starting app..."
           
             set -a
-            source /${{ secrets.SECRET }}/gridsec.env
+            source /${{ secrets.ENV_FILE }}/apigridsec.env
             set +a
 
             nohup java -Dspring.profiles.active=staging \
@@ -142,7 +142,7 @@ jobs:
             $SERVER:$REMOTE_PATH
           
           echo "Writing env file..."
-          ssh -o StrictHostKeyChecking=no $SERVER "cat > /${{ secrets.ENV_FILE }}/gridsec.env" << EOF
+          ssh -o StrictHostKeyChecking=no $SERVER "cat > /${{ secrets.ENV_FILE }}/apigridsec.env" << EOF
           
           EUREKA_ADDRESS="${{ secrets.EUREKA_ADDRESS }}"
           EUREKA_PORT="${{ secrets.EUREKA_PORT }}"
@@ -150,7 +150,7 @@ jobs:
           ENV="${{ secrets.ENV_FILE }}"
           EOF
           
-          ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/gridsec.env"
+          ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/apigridsec.env"
 
           echo "Deploying (safe SSH execution)..."
           ssh -o StrictHostKeyChecking=no $SERVER 'bash -s' << 'EOF'
@@ -171,7 +171,7 @@ jobs:
             echo "Starting app..."
           
             set -a
-            source /${{ secrets.ENV_FILE }}/gridsec.env
+            source /${{ secrets.ENV_FILE }}/apigridsec.env
             set +a
 
             nohup java -Dspring.profiles.active=prod \
