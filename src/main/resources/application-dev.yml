@@ -111,15 +111,15 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
-    file:
-      name: /opt/java-webservices/logs/api-gateway.log
-
-    logback:
-      rolling policy:
-        max-file-size: 20MB
-        max-history: 30
-        total-size-cap: 2GB
-        file-name-pattern: /opt/java-webservices/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
+#    file:
+#      name: /opt/java-webservices/logs/api-gateway.log
+#
+#    logback:
+#      rolling policy:
+#        max-file-size: 20MB
+#        max-history: 30
+#        total-size-cap: 2GB
+#        file-name-pattern: /opt/java-webservices/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
 
 
 resilience4j:
