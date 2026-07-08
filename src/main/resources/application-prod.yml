@@ -4,10 +4,10 @@ server:
 
   ssl:
     enabled: true
-    key-store: classpath:STAR_cloud_memmserve_com.p12
-    key-store-password: Passw0rd!@#)(*
-    key-store-type: PKCS12
-    key-alias: 1
+    key-store: file:/${ENV}/STAR_cloud_memmserve_com.p12
+    key-store-password: ${KEYSTORE_PASSW0RD}
+    key-store-type: ${KEYSTORE_TYPE}
+    key-alias: ${KEYSTORE_ALIAS}
 
 spring:
   application:

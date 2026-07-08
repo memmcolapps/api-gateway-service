@@ -83,6 +83,9 @@ jobs:
           EUREKA_PORT="${{ secrets.EUREKA_PORT }}"
           LOCATION="${{ secrets.LOCATION }}"
           ENV="${{ secrets.ENV_FILE }}"
+          KEYSTORE_ALIAS="${{ secrets.KEYSTORE_ALIAS }}"
+          KEYSTORE_PASSW0RD="${{ secrets.KEYSTORE_PASSW0RD }}"
+          KEYSTORE_TYPE="${{ secrets.KEYSTORE_TYPE }}"
           EOF
           
           ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/apigridsec.env"
@@ -148,6 +151,9 @@ jobs:
           EUREKA_PORT="${{ secrets.EUREKA_PORT }}"
           LOCATION="${{ secrets.LOCATION }}"
           ENV="${{ secrets.ENV_FILE }}"
+          KEYSTORE_ALIAS="${{ secrets.KEYSTORE_ALIAS }}"
+          KEYSTORE_PASSW0RD="${{ secrets.KEYSTORE_PASSW0RD }}"
+          KEYSTORE_TYPE="${{ secrets.KEYSTORE_TYPE }}"
           EOF
           
           ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/apigridsec.env"
