@@ -5,7 +5,7 @@ server:
   ssl:
     enabled: true
     key-store: file:/${ENV}/STAR_cloud_memmserve_com.p12
-    key-store-password: ${KEYSTORE_PASSW0RD}
+    key-store-password: ${KEYSTORE_PASSWORD}
     key-store-type: ${KEYSTORE_TYPE}
     key-alias: ${KEYSTORE_ALIAS}
 

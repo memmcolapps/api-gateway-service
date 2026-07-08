@@ -84,7 +84,7 @@ jobs:
           LOCATION="${{ secrets.LOCATION }}"
           ENV="${{ secrets.ENV_FILE }}"
           KEYSTORE_ALIAS="${{ secrets.KEYSTORE_ALIAS }}"
-          KEYSTORE_PASSW0RD="${{ secrets.KEYSTORE_PASSW0RD }}"
+          KEYSTORE_PASSWORD="${{ secrets.KEYSTORE_PASSWORD }}"
           KEYSTORE_TYPE="${{ secrets.KEYSTORE_TYPE }}"
           EOF
           
@@ -152,7 +152,7 @@ jobs:
           LOCATION="${{ secrets.LOCATION }}"
           ENV="${{ secrets.ENV_FILE }}"
           KEYSTORE_ALIAS="${{ secrets.KEYSTORE_ALIAS }}"
-          KEYSTORE_PASSW0RD="${{ secrets.KEYSTORE_PASSW0RD }}"
+          KEYSTORE_PASSWORD="${{ secrets.KEYSTORE_PASSWORD }}"
           KEYSTORE_TYPE="${{ secrets.KEYSTORE_TYPE }}"
           EOF
           
