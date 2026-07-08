@@ -4,10 +4,10 @@ server:
 
   ssl:
     enabled: true
-    key-store: classpath:STAR_memmserve_com.p12
-    key-store-password: Passw0rd!@#)(*
-    key-store-type: PKCS12
-    key-alias: 1
+    key-store: file:/${ENV}/STAR_memmserve_com.p12
+    key-store-password: ${KEYSTORE_PASSW0RD}
+    key-store-type: ${KEYSTORE_TYPE}
+    key-alias: ${KEYSTORE_ALIAS}
 
 spring:
   application:
@@ -87,7 +87,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://${EUREKA_ADDRESS}:${EUREKA_PORT}/eureka/
       # https://eureka-service-production-6595.up.railway.app/eureka/
       # https://eureka-service-production.up.railway.app/eureka/
   instance:
@@ -108,6 +108,15 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+  file:
+    name: /${LOCATION}/logs/api-gateway.log
+
+  logback:
+    rollingpolicy:
+      max-file-size: 20MB
+      max-history: 30
+      total-size-cap: 2GB
+      file-name-pattern: /${LOCATION}/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
 
 
 resilience4j:

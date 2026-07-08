@@ -1,12 +1,6 @@
 
 server:
   port: 443
-#  ssl:
-#    enabled: true
-#    key-store: classpath:STAR_memmserve_com.p12
-#    key-store-password: Passw0rd!@#)(*
-#    key-store-type: PKCS12
-##    key-alias: my-api-ssl
 
 spring:
   application:
@@ -111,6 +105,15 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+#    file:
+#      name: /opt/java-webservices/logs/api-gateway.log
+#
+#    logback:
+#      rolling policy:
+#        max-file-size: 20MB
+#        max-history: 30
+#        total-size-cap: 2GB
+#        file-name-pattern: /opt/java-webservices/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
 
 
 resilience4j:

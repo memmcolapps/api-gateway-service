@@ -60,21 +60,35 @@ jobs:
           ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
 
       # =====================================================
-      # DEPLOY STAGING SSH_PORT="${{ secrets.STAGING_SERVER_SSH_PORT }}"
+      # DEPLOY STAGING SSH_PORT="${{ secrets.STAGING_SERVER_SSH_PORT }}" etc/secret
       # =====================================================
       - name: Deploy Staging
         if: github.ref == 'refs/heads/staging'
         run: |
           SERVER="${{ secrets.STAGING_SERVER_USER }}@${{ secrets.STAGING_SERVER_HOST }}"
-          REMOTE_PATH="/opt/java-webservices/api-gateway-service.jar"
+          REMOTE_PATH="/${{ secrets.LOCATION }}/api-gateway-service.jar"
 
           echo "Creating remote directory..."
-          ssh -o StrictHostKeyChecking=no $SERVER "mkdir -p /opt/java-webservices"
+          ssh -o StrictHostKeyChecking=no $SERVER "mkdir -p /${{ secrets.ENV_FILE }}"
 
           echo "Uploading JAR..."
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" \
             "$JAR_FILE" \
             $SERVER:$REMOTE_PATH
+          
+          echo "Writing env file..."
+          ssh -o StrictHostKeyChecking=no $SERVER "cat > /${{ secrets.ENV_FILE }}/apigridsec.env" << EOF
+          
+          EUREKA_ADDRESS="${{ secrets.EUREKA_ADDRESS }}"
+          EUREKA_PORT="${{ secrets.EUREKA_PORT }}"
+          LOCATION="${{ secrets.LOCATION }}"
+          ENV="${{ secrets.ENV_FILE }}"
+          KEYSTORE_ALIAS="${{ secrets.KEYSTORE_ALIAS }}"
+          KEYSTORE_PASSW0RD="${{ secrets.KEYSTORE_PASSW0RD }}"
+          KEYSTORE_TYPE="${{ secrets.KEYSTORE_TYPE }}"
+          EOF
+          
+          ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/apigridsec.env"
 
           echo "Deploying (safe SSH execution)..."
           ssh -o StrictHostKeyChecking=no $SERVER 'bash -s' << 'EOF'
@@ -93,10 +107,13 @@ jobs:
             fi
 
             echo "Starting app..."
+          
+            set -a
+            source /${{ secrets.ENV_FILE }}/apigridsec.env
+            set +a
 
             nohup java -Dspring.profiles.active=staging \
-              -jar /opt/java-webservices/api-gateway-service.jar \
-              > /opt/java-webservices/api-gateway-staging.log 2>&1 &
+              -jar /${{ secrets.LOCATION }}/api-gateway-service.jar &
 
             echo "Deployment complete"
           EOF
@@ -117,15 +134,29 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           SERVER="${{ secrets.PROD_SERVER_USER }}@${{ secrets.PROD_SERVER_HOST }}"
-          REMOTE_PATH="/opt/java-webservices/api-gateway-service.jar"
+          REMOTE_PATH="/${{ secrets.LOCATION }}/api-gateway-service.jar"
 
           echo "Creating remote directory..."
-          ssh -o StrictHostKeyChecking=no $SERVER "mkdir -p /opt/java-webservices"
+          ssh -o StrictHostKeyChecking=no $SERVER "mkdir -p /${{ secrets.ENV_FILE }}"
 
           echo "Uploading JAR..."
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" \
             "$JAR_FILE" \
             $SERVER:$REMOTE_PATH
+          
+          echo "Writing env file..."
+          ssh -o StrictHostKeyChecking=no $SERVER "cat > /${{ secrets.ENV_FILE }}/apigridsec.env" << EOF
+          
+          EUREKA_ADDRESS="${{ secrets.EUREKA_ADDRESS }}"
+          EUREKA_PORT="${{ secrets.EUREKA_PORT }}"
+          LOCATION="${{ secrets.LOCATION }}"
+          ENV="${{ secrets.ENV_FILE }}"
+          KEYSTORE_ALIAS="${{ secrets.KEYSTORE_ALIAS }}"
+          KEYSTORE_PASSW0RD="${{ secrets.KEYSTORE_PASSW0RD }}"
+          KEYSTORE_TYPE="${{ secrets.KEYSTORE_TYPE }}"
+          EOF
+          
+          ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.ENV_FILE }}/apigridsec.env"
 
           echo "Deploying (safe SSH execution)..."
           ssh -o StrictHostKeyChecking=no $SERVER 'bash -s' << 'EOF'
@@ -144,10 +175,13 @@ jobs:
             fi
 
             echo "Starting app..."
+          
+            set -a
+            source /${{ secrets.ENV_FILE }}/apigridsec.env
+            set +a
 
             nohup java -Dspring.profiles.active=prod \
-              -jar /opt/java-webservices/api-gateway-service.jar \
-              > /opt/java-webservices/api-gateway-prod.log 2>&1 &
+              -jar /${{ secrets.LOCATION }}/api-gateway-service.jar &
 
             echo "Deployment complete"
           EOF
