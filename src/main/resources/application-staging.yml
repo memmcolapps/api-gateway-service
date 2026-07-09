@@ -5,7 +5,7 @@ server:
   ssl:
     enabled: true
     key-store: file:/${ENV}/STAR_memmserve_com.p12
-    key-store-password: ${KEYSTORE_PASSW0RD}
+    key-store-password: ${KEYSTORE_PASSWORD}
     key-store-type: ${KEYSTORE_TYPE}
     key-alias: ${KEYSTORE_ALIAS}
 
@@ -115,7 +115,7 @@ logging:
     rollingpolicy:
       max-file-size: 20MB
       max-history: 30
-      total-size-cap: 2GB
+      total-size-cap: 1GB
       file-name-pattern: /${LOCATION}/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
 
 
