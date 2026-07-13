@@ -70,6 +70,13 @@ spring:
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
+        - id: powerhub-core
+          uri: lb://POWERHUB-CORE
+          predicates:
+            - Path=/powerhub/api/v1/**
+          filters:
+            - RewritePath=/powerhub/api/v1/(?<remaining>.*), /${remaining}
+
         - id: tracker-backend
           uri: http://localhost:3000
           predicates:
