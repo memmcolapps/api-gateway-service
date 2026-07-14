@@ -115,7 +115,8 @@ jobs:
             set +a
 
             nohup java -Dspring.profiles.active=staging \
-              -jar /${{ secrets.LOCATION }}/api-gateway-service.jar &
+              -jar /${{ secrets.LOCATION }}/api-gateway-service.jar \
+              >/dev/null 2>&1 < /dev/null &
 
             echo "Deployment complete"
           EOF
@@ -183,7 +184,8 @@ jobs:
             set +a
 
             nohup java -Dspring.profiles.active=prod \
-              -jar /${{ secrets.LOCATION }}/api-gateway-service.jar &
+              -jar /${{ secrets.LOCATION }}/api-gateway-service.jar \
+              >/dev/null 2>&1 < /dev/null &
 
             echo "Deployment complete"
           EOF
