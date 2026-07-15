@@ -68,12 +68,12 @@ spring:
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
-        - id: powerhub-core
-          uri: lb://POWERHUB-CORE
+        - id: powerhub-api
+          uri: lb://POWERHUB-API
           predicates:
-            - Path=/powerhub/api/v1/**
+            - Path=/powerhub/v1/**
           filters:
-            - RewritePath=/powerhub/api/v1/(?<remaining>.*), /${remaining}
+            - RewritePath=/powerhub/v1/(?<remaining>.*), /${remaining}
 
         - id: epailsecurity
           uri: http://localhost:5050
