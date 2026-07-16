@@ -61,8 +61,8 @@ spring:
           filters:
             - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: portal-onboard-service
 
-        - id: hes-service-dev
-          uri: lb://HES-SERVICE-DEV
+        - id: hes
+          uri: lb://HES
           predicates:
             - Path=/hes/**
           filters:
