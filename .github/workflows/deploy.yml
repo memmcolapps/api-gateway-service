@@ -495,117 +495,84 @@ jobs:
 
           EOF
 
-      #######################################################
-      # Stop WinSW Service
-      #######################################################
-      - name: Stop Windows Service
-        run: |
-          ssh \
-            -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
-            "powershell -NoProfile -NonInteractive -" <<'EOF'
+#      #######################################################
+#      # Stop WinSW Service
+#      #######################################################
+#      - name: Stop Windows Service
+#        run: |
+#          ssh \
+#            -i ~/.ssh/id_rsa \
+#            -o StrictHostKeyChecking=no \
+#            ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
+#            "powershell -NoProfile -NonInteractive -" <<'EOF'
+#
+#          $ErrorActionPreference = 'Stop'
+#
+#          $service = Get-Service -Name 'api-gateway-service' -ErrorAction Stop
+#
+#          Write-Host "Current Status: $($service.Status)"
+#
+#          if ($service.Status -eq 'Running') {
+#
+#              Write-Host "Stopping service..."
+#
+#              Stop-Service -Name 'api-gateway-service' -Force
+#
+#              $service.WaitForStatus('Stopped','00:00:30')
+#
+#          }
+#
+#          $service = Get-Service -Name 'api-gateway-service'
+#
+#          if ($service.Status -ne 'Stopped') {
+#
+#              throw "Failed to stop service."
+#
+#          }
+#
+#          Write-Host "Service stopped successfully."
+#
+#          EOF
 
-          $ErrorActionPreference = 'Stop'
-
-          $service = Get-Service -Name 'api-gateway-service' -ErrorAction Stop
-
-          Write-Host "Current Status: $($service.Status)"
-
-          if ($service.Status -eq 'Running') {
-
-              Write-Host "Stopping service..."
-
-              Stop-Service -Name 'api-gateway-service' -Force
-
-              $service.WaitForStatus('Stopped','00:00:30')
-
-          }
-
-          $service = Get-Service -Name 'api-gateway-service'
-
-          if ($service.Status -ne 'Stopped') {
-
-              throw "Failed to stop service."
-
-          }
-
-          Write-Host "Service stopped successfully."
-
-          EOF
-
-      #######################################################
-      # Start Windows Service
-      #######################################################
-      - name: Start Windows Service
-        run: |
-          ssh \
-            -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
-            "powershell -NoProfile -NonInteractive -" <<'EOF'
-
-          $ErrorActionPreference='Stop'
-
-          if(!(Test-Path "C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar")){
-
-              throw "Deployment jar missing."
-
-          }
-
-          Write-Host "Starting service..."
-
-          Start-Service -Name 'api-gateway-service'
-
-          (Get-Service -Name 'api-gateway-service').WaitForStatus(
-              'Running',
-              '00:00:30'
-          )
-
-          $service=Get-Service -Name 'api-gateway-service'
-
-          if($service.Status -ne 'Running'){
-
-              throw "Service failed to start."
-
-          }
-
-          Write-Host "Service started successfully."
-
-          EOF
-
-      #######################################################
-      # Verify Java Process
-      #######################################################
-      - name: Verify Java Process
-        run: |
-          ssh \
-            -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o ServerAliveInterval=30 \
-            -o ServerAliveCountMax=10 \
-            ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
-            "powershell -NoProfile -NonInteractive -" <<'EOF'
-
-          $ErrorActionPreference='Stop'
-
-          $java = Get-CimInstance Win32_Process |
-          Where-Object {
-
-              $_.Name -eq "java.exe" -and
-              $_.CommandLine -like "*api-gateway-service.jar*"
-
-          }
-
-          if(!$java){
-
-              throw "Java process not running."
-
-          }
-
-          Write-Host "Java PID: $($java.ProcessId)"
-
-          EOF
+#      #######################################################
+#      # Start Windows Service
+#      #######################################################
+#      - name: Start Windows Service
+#        run: |
+#          ssh \
+#            -i ~/.ssh/id_rsa \
+#            -o StrictHostKeyChecking=no \
+#            ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
+#            "powershell -NoProfile -NonInteractive -" <<'EOF'
+#
+#          $ErrorActionPreference='Stop'
+#
+#          if(!(Test-Path "C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar")){
+#
+#              throw "Deployment jar missing."
+#
+#          }
+#
+#          Write-Host "Starting service..."
+#
+#          Start-Service -Name 'api-gateway-service'
+#
+#          (Get-Service -Name 'api-gateway-service').WaitForStatus(
+#              'Running',
+#              '00:00:30'
+#          )
+#
+#          $service=Get-Service -Name 'api-gateway-service'
+#
+#          if($service.Status -ne 'Running'){
+#
+#              throw "Service failed to start."
+#
+#          }
+#
+#          Write-Host "Service started successfully."
+#
+#          EOF
 
       #######################################################
       # Verify Java Process
@@ -639,6 +606,39 @@ jobs:
           Write-Host "Java PID: $($java.ProcessId)"
 
           EOF
+
+#      #######################################################
+#      # Verify Java Process
+#      #######################################################
+#      - name: Verify Java Process
+#        run: |
+#          ssh \
+#            -i ~/.ssh/id_rsa \
+#            -o StrictHostKeyChecking=no \
+#            -o ServerAliveInterval=30 \
+#            -o ServerAliveCountMax=10 \
+#            ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
+#            "powershell -NoProfile -NonInteractive -" <<'EOF'
+#
+#          $ErrorActionPreference='Stop'
+#
+#          $java = Get-CimInstance Win32_Process |
+#          Where-Object {
+#
+#              $_.Name -eq "java.exe" -and
+#              $_.CommandLine -like "*api-gateway-service.jar*"
+#
+#          }
+#
+#          if(!$java){
+#
+#              throw "Java process not running."
+#
+#          }
+#
+#          Write-Host "Java PID: $($java.ProcessId)"
+#
+#          EOF
 
 #      #######################################################
 #      # Health Check
