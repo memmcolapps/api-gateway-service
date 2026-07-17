@@ -63,19 +63,19 @@ spring:
           filters:
             - RewritePath=/portal/onboard/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix- id: portal-onboard-service
 
-        - id: hes-service-dev
-          uri: lb://HES-SERVICE-DEV
+        - id: hes-service
+          uri: lb://HES-SERVICE
           predicates:
             - Path=/hes/**
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
-        - id: powerhub-core
-          uri: lb://POWERHUB-CORE
+        - id: powerhub-api
+          uri: lb://POWERHUB-API
           predicates:
-            - Path=/powerhub/api/v1/**
+            - Path=/powerhub/v1/**
           filters:
-            - RewritePath=/powerhub/api/v1/(?<remaining>.*), /${remaining}
+            - RewritePath=/powerhub/v1/(?<remaining>.*), /${remaining}
 
         - id: tracker-backend
           uri: http://localhost:3000

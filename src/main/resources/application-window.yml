@@ -4,7 +4,7 @@ server:
 
   ssl:
     enabled: true
-    key-store: file:/${ENV}/STAR_cloud_memmserve_com.p12
+    key-store: file:/${WIN_LOCATION}/STAR_cloud_memmserve_com.p12
     key-store-password: ${KEYSTORE_PASSWORD}
     key-store-type: ${KEYSTORE_TYPE}
     key-alias: ${KEYSTORE_ALIAS}
@@ -19,20 +19,6 @@ spring:
       forwarded:
         enabled: true
       routes:
-        - id: smarte-backend-service
-          uri: lb://SMARTE-BACKEND-SERVICE
-          predicates:
-            - Path=/smarte/v1/api/**  # Strip the prefix- id: smarte-backend-service
-          filters:
-            - RewritePath=/smarte/v1/api/(?<remaining>.*), /${remaining} # Strip the prefix
-
-        - id: email-mqtt-client-service
-          uri: lb://EMAIL-MQTT-CLIENT-SERVICE
-          predicates:
-            - Path=/smarte/email/**  # Strip the prefix- id: email-mqtt-client-service
-          filters:
-            - RewritePath=/smarte/email/(?<remaining>.*), /${remaining} # Strip the prefix
-        #            - CircuitBreaker=name=authenticationCircuitBreaker, fallbackUri=/api/fallback
 
         - id: gridflex-backend-service-v1
           uri: lb://GRIDFLEX-BACKEND-SERVICE
@@ -68,28 +54,6 @@ spring:
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
-        - id: powerhub-api
-          uri: lb://POWERHUB-API
-          predicates:
-            - Path=/powerhub/v1/**
-          filters:
-            - RewritePath=/powerhub/v1/(?<remaining>.*), /${remaining}
-
-        - id: epailsecurity
-          uri: http://localhost:5050
-          predicates:
-            - Path=/epailsecurity/**
-          filters:
-            - RewritePath=/epailsecurity/(?<segment>.*), /${segment}
-
-        - id: tracker-backend
-          uri: http://localhost:3000
-          predicates:
-            - Path=/momas/radio/**
-          filters:
-            - RewritePath=/momas/radio/(?<remaining>.*), /${remaining} # Strip the prefix - tracker-backend
-
-
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -100,8 +64,6 @@ eureka:
   client:
     service-url:
       defaultZone: http://${EUREKA_ADDRESS}:${EUREKA_PORT}/eureka/
-      # https://eureka-service-production-6595.up.railway.app/eureka/
-      # https://eureka-service-production.up.railway.app/eureka/
   instance:
     prefer-ip-address: true                # Register using IP instead of hostname
     ip-address: ${spring.cloud.client.ip-address}  # Auto-detects service IP
@@ -121,15 +83,17 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
   file:
-    name: /${LOCATION}/logs/api-gateway.log
+    name: C:/${WIN_LOCATION}/logs/api-gateway.log
 
   logback:
     rollingpolicy:
       max-file-size: 20MB
       max-history: 30
       total-size-cap: 1GB
-      file-name-pattern: /${LOCATION}/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
+      file-name-pattern: C:/${WIN_LOCATION}/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
 
+#  error:
+#    include-message: always
 
 resilience4j:
   circuitbreaker:
@@ -140,33 +104,3 @@ resilience4j:
         minimum-number-of-calls: 5
         failure-rate-threshold: 50
         wait-duration-in-open-state: 10s
-
-
-
-#server:
-#  port: 8081
-#
-#spring:
-#  application:
-#    name: api-gateway
-#
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:8761/eureka/
-
-
-#        - id: authentication-service
-#          uri: lb://AUTHENTICATION-SERVICE
-##          https://authentication-service-production-e98d.up.railway.app #Memmcolapp railway account
-#          # https://authentication-service-production-dbcd.up.railway.app #my railway account
-#          # lb://AUTHENTICATION-SERVICE
-#          predicates:
-#            - Path=/smarte/authentication/**
-#          filters:
-##            - Retry=5  # Retry failed requests up to 5 times
-#            - RewritePath=/smarte/authentication/(?<remaining>.*), /${remaining}
-##            - name: CircuitBreaker
-##              args:
-##                name: gatewayService  # The name of the circuit breaker
-##                fallbackUri: forward:/api/fallback
