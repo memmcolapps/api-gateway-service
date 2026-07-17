@@ -303,12 +303,12 @@ jobs:
           New-Item `
           -ItemType Directory `
           -Force `
-          -Path 'C:\momas\api_gateway' | Out-Null
+          -Path 'C:/${{ secrets.WIN_LOCATION }}' | Out-Null
           
           New-Item `
           -ItemType Directory `
           -Force `
-          -Path 'C:\momas\api_gateway\logs' | Out-Null
+          -Path 'C:/${{ secrets.WIN_LOCATION }}/logs' | Out-Null
           
           Write-Host "Deployment directory ready."
           
@@ -373,9 +373,9 @@ jobs:
 
           $ErrorActionPreference='Stop'
 
-          $jar="C:\momas\api_gateway\api-gateway-service.jar"
+          $jar="C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar"
 
-          $backup="C:\momas\api_gateway\api-gateway-service.jar.bak"
+          $backup="C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar.bak"
 
           if(Test-Path $jar){
 
@@ -436,18 +436,18 @@ jobs:
             "powershell -NoProfile -NonInteractive -" <<'EOF'
 
               $files = @(
-                  'C:\momas\api_gateway\api-gateway-service.exe',
-                  'C:\momas\api_gateway\api-gateway-service.jar',
-                  'C:\momas\api_gateway\api-gateway-service.xml'
+                  'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.exe',
+                  'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar',
+                  'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.xml'
               )
   
-              foreach(\$file in \$files){
+              foreach($file in $files){
   
-                  if(!(Test-Path \$file)){
-                      throw \"Missing: \$file\"
+                  if(!(Test-Path $file)){
+                      throw "Missing: $file"
                   }
   
-                  Write-Host \"Verified: \$file\"
+                  Write-Host "Verified: $file"
   
               }
   
@@ -547,7 +547,7 @@ jobs:
 
           $ErrorActionPreference='Stop'
 
-          if(!(Test-Path "C:\momas\api_gateway\api-gateway-service.jar")){
+          if(!(Test-Path "C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar")){
 
               throw "Deployment jar missing."
 
@@ -719,7 +719,7 @@ jobs:
 
             Write-Host '========== LOGS =========='
 
-            Get-ChildItem C:\momas\api_gateway\logs -ErrorAction SilentlyContinue
+            Get-ChildItem C:/${{ secrets.WIN_LOCATION }}/logs -ErrorAction SilentlyContinue
 
             "
       #######################################################
@@ -739,36 +739,36 @@ jobs:
             Write-Host ''
             Write-Host '========== WinSW OUT =========='
 
-            if(Test-Path 'C:\momas\api_gateway\api-gateway-service.out.log'){
-                Get-Content 'C:\momas\api_gateway\api-gateway-service.out.log' -Tail 100
+            if(Test-Path 'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.out.log'){
+                Get-Content 'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.out.log' -Tail 100
             }
 
             Write-Host ''
             Write-Host '========== WinSW ERR =========='
 
-            if(Test-Path 'C:\momas\api_gateway\api-gateway-service.err.log'){
-                Get-Content 'C:\momas\api_gateway\api-gateway-service.err.log' -Tail 100
+            if(Test-Path 'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.err.log'){
+                Get-Content 'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.err.log' -Tail 100
             }
 
             Write-Host ''
             Write-Host '========== WRAPPER LOG =========='
 
-            if(Test-Path 'C:\momas\api_gateway\wrapper.log'){
-                Get-Content 'C:\momas\api_gateway\wrapper.log' -Tail 100
+            if(Test-Path 'C:/${{ secrets.WIN_LOCATION }}/wrapper.log'){
+                Get-Content 'C:/${{ secrets.WIN_LOCATION }}/wrapper.log' -Tail 100
             }
 
             Write-Host ''
             Write-Host '========== SPRING LOG =========='
 
-            if(Test-Path 'C:\momas\api_gateway\logs\apigateway.log'){
-                Get-Content 'C:\momas\api_gateway\logs\apigateway.log' -Tail 100
+            if(Test-Path 'C:/${{ secrets.WIN_LOCATION }}/logs/apigateway.log'){
+                Get-Content 'C:/${{ secrets.WIN_LOCATION }}/logs/apigateway.log' -Tail 100
             }
 
             Write-Host ''
             Write-Host '========== GC LOG =========='
 
-            if(Test-Path 'C:\momas\api_gateway\logs\gc.log'){
-                Get-Content 'C:\momas\api_gateway\logs\gc.log' -Tail 100
+            if(Test-Path 'C:/${{ secrets.WIN_LOCATION }}/logs/gc.log'){
+                Get-Content 'C:/${{ secrets.WIN_LOCATION }}/logs/gc.log' -Tail 100
             }
 
             "
