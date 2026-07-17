@@ -433,27 +433,27 @@ jobs:
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=10 \
             ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
-            powershell -Command "
+            "powershell -NoProfile -NonInteractive -" <<'EOF'
 
-            \$files = @(
-                'C:\momas\api_gateway\api-gateway-service.exe',
-                'C:\momas\api_gateway\api-gateway-service.jar',
-                'C:\momas\api_gateway\api-gateway-service.xml'
-            )
+              $files = @(
+                  'C:\momas\api_gateway\api-gateway-service.exe',
+                  'C:\momas\api_gateway\api-gateway-service.jar',
+                  'C:\momas\api_gateway\api-gateway-service.xml'
+              )
+  
+              foreach(\$file in \$files){
+  
+                  if(!(Test-Path \$file)){
+                      throw \"Missing: \$file\"
+                  }
+  
+                  Write-Host \"Verified: \$file\"
+  
+              }
+  
+              Get-ChildItem C:\${{ secrets.WIN_LOCATION }}
 
-            foreach(\$file in \$files){
-
-                if(!(Test-Path \$file)){
-                    throw \"Missing: \$file\"
-                }
-
-                Write-Host \"Verified: \$file\"
-
-            }
-
-            Get-ChildItem C:\momas\api_gateway
-
-            "
+            END
 
       #######################################################
       # Start Windows Service
