@@ -201,7 +201,7 @@ jobs:
     env:
       APP_NAME: api-gateway-service
       SERVICE_NAME: api-gateway-service
-      DEPLOY_DIR: 'C:\momas\api_gateway'
+      DEPLOY_DIR: 'C:\${{ secrets.WIN_LOCATION }}'
       JAR_NAME: api-gateway-service.jar
 
     steps:
@@ -257,12 +257,11 @@ jobs:
       - name: Generate WinSW XML
         shell: bash
         run: |
-          
           cp deployment/api-gateway-service.xml.template api-gateway-service.xml
           
           sed -i "s|\${EUREKA_ADDRESS}|${{ secrets.EUREKA_ADDRESS }}|g" api-gateway-service.xml
           sed -i "s|\${EUREKA_PORT}|${{ secrets.EUREKA_PORT }}|g" api-gateway-service.xml
-          sed -i "s|\${WIN_LOCATION}|C:/${{secret.WIN_LOCATION}}|g" api-gateway-service.xml
+          sed -i "s|\${WIN_LOCATION}|C:/${{secrets.WIN_LOCATION}}|g" api-gateway-service.xml
           sed -i "s|\${KEYSTORE_ALIAS}|${{ secrets.KEYSTORE_ALIAS }}|g" api-gateway-service.xml
           sed -i "s|\${KEYSTORE_PASSWORD}|${{ secrets.KEYSTORE_PASSWORD }}|g" api-gateway-service.xml
           sed -i "s|\${KEYSTORE_TYPE}|${{ secrets.KEYSTORE_TYPE }}|g" api-gateway-service.xml
