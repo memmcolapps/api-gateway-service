@@ -290,28 +290,29 @@ jobs:
       #######################################################
       - name: Create Deployment Directory
         run: |
-
           ssh \
-            -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
-            "powershell -NoProfile -Command \"
+          -i ~/.ssh/id_rsa \
+          -o StrictHostKeyChecking=no \
+          -o ServerAliveInterval=30 \
+          -o ServerAliveCountMax=10 \
+          ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
+          "powershell -NoProfile -NonInteractive -" <<'EOF'
           
-          \$ErrorActionPreference='Stop'
-
-          New-Item `
-            -ItemType Directory `
-            -Force `
-            -Path '${{ env.DEPLOY_DIR }}' | Out-Null
-
-          New-Item `
-            -ItemType Directory `
-            -Force `
-            -Path '${{ env.DEPLOY_DIR }}\logs' | Out-Null
+          $ErrorActionPreference = 'Stop'
           
-          Write-Host 'Deployment directory ready.'
-
-          \""
+          New-Item `
+          -ItemType Directory `
+          -Force `
+          -Path 'C:\momas\api_gateway' | Out-Null
+          
+          New-Item `
+          -ItemType Directory `
+          -Force `
+          -Path 'C:\momas\api_gateway\logs' | Out-Null
+          
+          Write-Host "Deployment directory ready."
+          
+          EOF
 
       #######################################################
       # Stop WinSW Service
