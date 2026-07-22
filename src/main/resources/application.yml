@@ -1,6 +1,6 @@
-server:
-  port: 443
-  forward-headers-strategy: native
+#server:
+#  port: 443
+#  forward-headers-strategy: native
 
 spring:
   application:
