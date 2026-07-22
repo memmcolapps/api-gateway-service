@@ -7,7 +7,7 @@ server:
     key-store: file:/${WIN_LOCATION}/alfuttaim-gridflex.memmserve.com.pfx
     key-store-password: ${KEYSTORE_PASSWORD}
     key-store-type: ${KEYSTORE_TYPE}
-    key-alias: ${KEYSTORE_ALIAS}
+#    key-alias: ${KEYSTORE_ALIAS}
 
 spring:
   application:
