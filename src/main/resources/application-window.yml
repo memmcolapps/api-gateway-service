@@ -54,6 +54,11 @@ spring:
           filters:
             - RewritePath=/hes/(?<remaining>.*), /${remaining} # Strip the prefix - id: Hes
 
+        - id: gridflex-frontend
+          uri: http://localhost:3000
+          predicates:
+            - Path=/
+
       globalcors:
         corsConfigurations:
           '[/**]':
