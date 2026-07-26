@@ -407,7 +407,7 @@ jobs:
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=10 \
             app.jar \
-            "${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }}:/C:/momas/api_gateway/api-gateway-service.jar"
+            "${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }}:/C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar"
 
       #######################################################
       # Upload WinSW XML
@@ -420,7 +420,7 @@ jobs:
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=10 \
             api-gateway-service.xml \
-            "${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }}:/C:/momas/api_gateway/api-gateway-service.xml"
+            "${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }}:/C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.xml"
 
       #######################################################
       # Verify Uploaded Files

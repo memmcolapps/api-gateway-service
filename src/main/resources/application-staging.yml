@@ -121,7 +121,7 @@ logging:
   logback:
     rollingpolicy:
       max-file-size: 20MB
-      max-history: 30
+      max-history: 10
       total-size-cap: 1GB
       file-name-pattern: /${LOCATION}/logs/api-gateway.%d{yyyy-MM-dd}.%i.log
 
