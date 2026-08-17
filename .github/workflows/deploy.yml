@@ -72,6 +72,9 @@ jobs:
 
           echo "Creating remote directory..."
           ssh -o StrictHostKeyChecking=no $SERVER "mkdir -p /${{ secrets.LOCATION }}"
+          
+          echo "Stopping service before upload..."
+          ssh -o StrictHostKeyChecking=no $SERVER "sudo systemctl stop apigateway"
 
           echo "Uploading JAR..."
           rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" \
@@ -92,34 +95,13 @@ jobs:
           
           ssh -o StrictHostKeyChecking=no $SERVER "chmod 600 /${{ secrets.LOCATION }}/.env.apigateway"
 
-          echo "Deploying (safe SSH execution)..."
-          ssh -o StrictHostKeyChecking=no $SERVER 'bash -s' << 'EOF'
+          echo "Starting service..."
+          ssh -o StrictHostKeyChecking=no $SERVER "sudo systemctl start apigateway"
 
-            set -e
+          echo "Verifying service is running..."
+          ssh -o StrictHostKeyChecking=no $SERVER "sleep 5 && sudo systemctl is-active apigateway"
 
-            echo "Stopping app safely..."
-
-            PID=$(ps -ef | grep api-gateway-service.jar | grep -v grep | awk '{print $2}')
-
-            if [ -n "$PID" ]; then
-              echo "Killing PID: $PID"
-              kill -9 $PID || true
-            else
-              echo "No running process found"
-            fi
-
-            echo "Starting app..."
-          
-            set -a
-            source /${{ secrets.LOCATION }}/.env.apigateway
-            set +a
-
-            nohup java -Dspring.profiles.active=staging \
-              -jar /${{ secrets.LOCATION }}/api-gateway-service.jar \
-              >/dev/null 2>&1 < /dev/null &
-
-            echo "Deployment complete"
-          EOF
+          echo "Deployment complete"
 
       # =====================================================
       # SSH SETUP (PRODUCTION)
@@ -190,9 +172,8 @@ jobs:
             echo "Deployment complete"
           EOF
           
-          
 
-  deploy-windows:
+  deploy-alfuttaim:
 
     if: github.ref == 'refs/heads/alfuttaim'
 
