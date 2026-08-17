@@ -101,7 +101,6 @@ jobs:
           echo "Verifying service is running..."
           ssh -o StrictHostKeyChecking=no $SERVER "sleep 5 && sudo systemctl is-active apigateway"
 
-
           echo "Deployment complete"
 
       # =====================================================
@@ -172,7 +171,6 @@ jobs:
 
             echo "Deployment complete"
           EOF
-          
           
 
   deploy-alfuttaim:
