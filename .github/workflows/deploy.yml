@@ -98,7 +98,6 @@ jobs:
           echo "Verifying service is running..."
           ssh -o StrictHostKeyChecking=no $SERVER "sleep 5 && sudo systemctl is-active apigateway"
 
-
           echo "Deployment complete"
 
       # =====================================================
@@ -169,7 +168,6 @@ jobs:
 
             echo "Deployment complete"
           EOF
-          
           
 
   deploy-alfuttaim:
@@ -248,7 +246,7 @@ jobs:
           
           echo "Generated WinSW XML:"
           
-          cat api-gateway-service.xml
+#          cat api-gateway-service.xml
 
       #######################################################
       # Configure SSH
@@ -295,6 +293,58 @@ jobs:
           EOF
 
       #######################################################
+      # Upload WinSW Wrapper
+      #######################################################
+      - name: Upload WinSW Wrapper
+        run: |
+          
+          ssh \
+          -i ~/.ssh/id_rsa \
+          -o StrictHostKeyChecking=no \
+          -o ServerAliveInterval=30 \
+          -o ServerAliveCountMax=10 \
+          ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
+          "powershell -NoProfile -NonInteractive -" <<'EOF'
+          
+          if (Test-Path 'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.exe') {
+          
+           Write-Host "WinSW wrapper already exists."
+           Write-Host "Skipping wrapper upload."
+          
+           exit 0
+          }
+          
+          Write-Host "WinSW wrapper does not exist."
+          Write-Host "Wrapper will be uploaded."
+          
+          EOF
+          
+          WRAPPER_EXISTS=$(ssh \
+          -i ~/.ssh/id_rsa \
+          -o StrictHostKeyChecking=no \
+          ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
+          "powershell -NoProfile -NonInteractive -Command \"if (Test-Path 'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.exe') { exit 0 } else { exit 1 }\"" \
+          >/dev/null 2>&1 && echo "yes" || echo "no")
+          
+          if [ "$WRAPPER_EXISTS" = "no" ]; then
+
+          echo "Uploading api-gateway-service.exe..."
+
+          scp \
+           -i ~/.ssh/id_rsa \
+           -o StrictHostKeyChecking=no \
+           -o ServerAliveInterval=30 \
+           -o ServerAliveCountMax=10 \
+           deployment/api-gateway-service.exe \
+           "${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }}:/C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.exe"
+          
+          else
+
+          echo "api-gateway-service.exe already exists. Upload skipped."
+          
+          fi
+
+      #######################################################
       # Stop WinSW Service
       #######################################################
       - name: Stop Windows Service
@@ -310,6 +360,14 @@ jobs:
           $ErrorActionPreference = 'Stop'
 
           $service = Get-Service -Name 'api-gateway-service' -ErrorAction Stop
+          
+          if ($null -eq $service) {
+
+            Write-Host "api-gateway-service does not exist yet."
+            Write-Host "Skipping stop. Service will be installed later."
+
+            exit 0
+          }
 
           Write-Host "Current Status: $($service.Status)"
 
@@ -403,9 +461,9 @@ jobs:
             "${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }}:/C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.xml"
 
       #######################################################
-      # Verify Uploaded Files
+      # Install WinSW Service If Missing
       #######################################################
-      - name: Verify Upload
+      - name: Install WinSW Service If Missing
         run: |
           ssh \
             -i ~/.ssh/id_rsa \
@@ -414,26 +472,102 @@ jobs:
             -o ServerAliveCountMax=10 \
             ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
             "powershell -NoProfile -NonInteractive -" <<'EOF'
-
-              $files = @(
-                  'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.exe',
-                  'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar',
-                  'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.xml'
-              )
-  
-              foreach($file in $files){
-  
-                  if(!(Test-Path $file)){
-                      throw "Missing: $file"
-                  }
-  
-                  Write-Host "Verified: $file"
-  
+          
+          $ErrorActionPreference = 'Stop'
+          
+          $serviceName = 'api-gateway-service'
+          
+          $base = 'C:/${{ secrets.WIN_LOCATION }}'
+          
+          $wrapper = "$base/api-gateway-service.exe"
+          
+          $config = "$base/api-gateway-service.xml"
+          
+          $service = Get-Service `
+            -Name $serviceName `
+            -ErrorAction SilentlyContinue
+          
+          if ($null -eq $service) {
+          
+              Write-Host ""
+              Write-Host "============================================"
+              Write-Host "Installing WinSW Service"
+              Write-Host "============================================"
+          
+              if (!(Test-Path -LiteralPath $wrapper -PathType Leaf)) {
+                  throw "WinSW wrapper not found: $wrapper"
               }
-  
-              Get-ChildItem C:\${{ secrets.WIN_LOCATION }}
+          
+              if (!(Test-Path -LiteralPath $config -PathType Leaf)) {
+                  throw "WinSW configuration not found: $config"
+              }
+          
+              Write-Host "Wrapper: $wrapper"
+              Write-Host "Config:  $config"
+          
+              Push-Location $base
+          
+              try {
+          
+                  & $wrapper install
+          
+                  if ($LASTEXITCODE -ne 0) {
+                      throw "WinSW service installation failed."
+                  }
+          
+              }
+              finally {
+          
+                  Pop-Location
+              }
+          
+              Write-Host "WinSW service installed successfully."
+          
+          }
+          else {
+          
+              Write-Host ""
+              Write-Host "api-gateway-service already exists."
+              Write-Host "Skipping WinSW installation."
+          
+          }
+          
+          EOF
+      
 
-            END
+      #######################################################
+      # Verify Uploaded Files
+      #######################################################
+      - name: Verify Upload
+        run: |
+          ssh \
+          -i ~/.ssh/id_rsa \
+          -o StrictHostKeyChecking=no \
+          -o ServerAliveInterval=30 \
+          -o ServerAliveCountMax=10 \
+          ${{ secrets.WINDOW_SERVER_USER }}@${{ secrets.WINDOW_SERVER_HOST }} \
+          "powershell -NoProfile -NonInteractive -" <<'EOF'
+          
+          $files = @(
+           'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.exe',
+           'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.jar',
+           'C:/${{ secrets.WIN_LOCATION }}/api-gateway-service.xml'
+          )
+          
+          foreach($file in $files){
+          
+           if(!(Test-Path $file)){
+               throw "Missing: $file"
+           }
+          
+           Write-Host "Verified: $file"
+          
+          }
+          
+          Get-ChildItem C:\${{ secrets.WIN_LOCATION }}
+          
+          EOF
+
 
       #######################################################
       # Start Windows Service
