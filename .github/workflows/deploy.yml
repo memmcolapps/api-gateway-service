@@ -100,7 +100,7 @@ jobs:
 
         run: |
           set -euo pipefail
-          
+
           : "${SERVER_USER:?Missing server user}"
           : "${SERVER_HOST:?Missing server host}"
           : "${LOCATION:?Missing LOCATION secret}"
@@ -109,65 +109,62 @@ jobs:
           : "${KEYSTORE_ALIAS:?Missing keystore alias}"
           : "${KEYSTORE_PASSWORD:?Missing keystore password}"
           : "${KEYSTORE_TYPE:?Missing keystore type}"
-          
+
           SSH_PORT="${SSH_PORT:-22}"
-          
           SERVER="${SERVER_USER}@${SERVER_HOST}"
-          
-          # Normalize LOCATION so both "opt/java-webservices"
-          # and "/opt/java-webservices" work.
+
           LOCATION="${LOCATION#/}"
           APP_DIR="/${LOCATION}"
-          
+
           JAR_NAME="api-gateway-service.jar"
           SERVICE_NAME="apigateway"
           REMOTE_JAR="${APP_DIR}/${JAR_NAME}"
           REMOTE_ENV="${APP_DIR}/.env.apigateway"
-          
+
           SSH_OPTS=(
             -o StrictHostKeyChecking=no
             -o ConnectTimeout=20
             -p "$SSH_PORT"
           )
-          
+
           SSH_CMD="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 -p ${SSH_PORT}"
-          
+
           echo "Preparing deployment for ${SERVICE_NAME}..."
           echo "Target directory: ${APP_DIR}"
           echo "Spring profile: ${APP_PROFILE}"
-          
-          # Create the remote directory.
+
+          # Prepare the deployment directory.
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "mkdir -p '$APP_DIR'"
-          
-          # Create the systemd unit only if it does not already exist.
-          # Existing service configuration will be preserved.
+
+          # Create the service only if it does not already exist.
+          # Preserve existing service configuration.
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "sudo bash -s -- '$SERVER_USER' '$APP_DIR' '$APP_PROFILE'" <<'REMOTE'
           set -euo pipefail
-          
+
           APP_USER="$1"
           APP_DIR="$2"
           APP_PROFILE="$3"
-          
+
           SERVICE_FILE="/etc/systemd/system/apigateway.service"
-          
+
           if ! sudo systemctl cat apigateway >/dev/null 2>&1; then
             echo "Creating systemd service..."
-          
+
             JAVA_BIN="$(command -v java)"
-          
+
             if [ -z "$JAVA_BIN" ]; then
               echo "Java was not found on the server."
               exit 1
             fi
-          
+
             sudo tee "$SERVICE_FILE" >/dev/null <<UNIT
           [Unit]
           Description=API Gateway Spring Boot Application
           Wants=network-online.target
           After=network-online.target
-          
+
           [Service]
           Type=simple
           User=$APP_USER
@@ -178,37 +175,36 @@ jobs:
           RestartSec=10
           SuccessExitStatus=143
           TimeoutStopSec=30
-          
+
           [Install]
           WantedBy=multi-user.target
           UNIT
-          
+
             sudo systemctl daemon-reload
           else
             echo "Existing systemd unit found; preserving its configuration."
           fi
-          
+
           sudo systemctl enable apigateway
-          
+
           echo "Stopping API Gateway before deployment..."
           sudo systemctl stop apigateway
           REMOTE
-          
-          # Create the environment file locally with systemd-compatible
-          # double-quoted values. Do not print secret values in the logs.
+
+          # Generate a systemd-compatible environment file.
+          # Do not print environment values or secrets.
           ENV_TMP="$(mktemp)"
           trap 'rm -f "$ENV_TMP"' EXIT
-          
           export ENV_TMP
-          
+
           python3 <<'PY'
           import os
-          
+
           def systemd_quote(value):
               if "\n" in value or "\r" in value:
                   raise ValueError("Environment values must not contain newlines")
               return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
-          
+
           values = {
               "EUREKA_ADDRESS": os.environ["EUREKA_ADDRESS"],
               "EUREKA_PORT": os.environ["EUREKA_PORT"],
@@ -218,81 +214,106 @@ jobs:
               "KEYSTORE_PASSWORD": os.environ["KEYSTORE_PASSWORD"],
               "KEYSTORE_TYPE": os.environ["KEYSTORE_TYPE"],
           }
-          
+
           with open(os.environ["ENV_TMP"], "w", encoding="utf-8", newline="\n") as f:
               for key, value in values.items():
                   f.write(f"{key}={systemd_quote(value)}\n")
           PY
-          
+
           echo "Uploading application JAR..."
           rsync -az \
             -e "$SSH_CMD" \
             "$JAR_FILE" \
             "${SERVER}:${REMOTE_JAR}"
-          
+
           echo "Uploading environment file..."
           rsync -az \
             -e "$SSH_CMD" \
             "$ENV_TMP" \
             "${SERVER}:${REMOTE_ENV}"
-          
-          echo "Setting environment file permissions..."
+
+          echo "Restricting environment file permissions..."
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "chmod 600 '$REMOTE_ENV'"
-          
-          # Stop any legacy nohup process left behind by the old workflow.
-          # Match the exact JAR path and request graceful termination.
+
+          # Migration safeguard for processes left by the old nohup workflow.
+          # Ignore zombie processes and processes already managed by systemd.
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "bash -s -- '$REMOTE_JAR'" <<'REMOTE'
           set -euo pipefail
-          
+
           APP_JAR="$1"
-          
+
           mapfile -t PIDS < <(
             ps -eo pid=,args= |
               awk -v jar="$APP_JAR" '
                 index($0, jar) > 0 && /java/ { print $1 }
               '
           )
-          
+
+          if [ "${#PIDS[@]}" -eq 0 ]; then
+            echo "No legacy API Gateway process found."
+            exit 0
+          fi
+
+          SERVICE_PID="$(sudo systemctl show apigateway -p MainPID --value)"
+
           for PID in "${PIDS[@]}"; do
-            if [ "$PID" != "$$" ]; then
-              echo "Stopping legacy Java process PID $PID..."
-              kill -TERM "$PID" 2>/dev/null || true
+            if [ "$PID" = "$$" ] || [ "$PID" = "$PPID" ]; then
+              continue
             fi
+
+            if [ "$PID" = "$SERVICE_PID" ] && [ "$SERVICE_PID" != "0" ]; then
+              echo "Skipping systemd-managed process $PID."
+              continue
+            fi
+
+            STATE="$(ps -o stat= -p "$PID" 2>/dev/null | awk '{print $1}')"
+
+            if [ -z "$STATE" ] || [[ "$STATE" == Z* ]]; then
+              continue
+            fi
+
+            echo "Stopping legacy API Gateway process $PID..."
+            kill -TERM "$PID" 2>/dev/null || true
           done
-          
-          for attempt in $(seq 1 15); do
-            STILL_RUNNING=0
-          
+
+          for attempt in $(seq 1 20); do
+            REMAINING=0
+
             for PID in "${PIDS[@]}"; do
-              if kill -0 "$PID" 2>/dev/null; then
-                STILL_RUNNING=1
+              STATE="$(ps -o stat= -p "$PID" 2>/dev/null | awk '{print $1}')"
+
+              if [ -n "$STATE" ] && [[ "$STATE" != Z* ]]; then
+                REMAINING=1
               fi
             done
-          
-            if [ "$STILL_RUNNING" -eq 0 ]; then
+
+            if [ "$REMAINING" -eq 0 ]; then
               break
             fi
-          
+
             sleep 1
           done
-          
+
           for PID in "${PIDS[@]}"; do
-            if kill -0 "$PID" 2>/dev/null; then
-              echo "Legacy process $PID did not stop gracefully."
+            STATE="$(ps -o stat= -p "$PID" 2>/dev/null | awk '{print $1}')"
+
+            if [ -n "$STATE" ] && [[ "$STATE" != Z* ]]; then
+              echo "Legacy process $PID is still running (state: $STATE)."
               exit 1
             fi
           done
+
+          echo "Legacy process cleanup completed."
           REMOTE
-          
+
           echo "Starting API Gateway with systemd..."
-          
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "sudo systemctl start apigateway"
-          
+
           echo "Waiting for API Gateway to become active..."
-          
+
           if ! ssh "${SSH_OPTS[@]}" "$SERVER" \
             "for i in \$(seq 1 60); do
                if sudo systemctl is-active --quiet apigateway; then
@@ -302,21 +323,21 @@ jobs:
                sleep 1
              done
              exit 1"; then
-          
+
             echo "API Gateway failed to become active."
+
             ssh "${SSH_OPTS[@]}" "$SERVER" \
               "sudo systemctl status apigateway --no-pager || true;
                sudo journalctl -u apigateway -n 100 --no-pager || true"
+
             exit 1
           fi
-          
+
           echo "Checking boot-time enablement..."
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "sudo systemctl is-enabled apigateway"
-          
-          echo "API Gateway deployment completed successfully."
-          
 
+          echo "API Gateway deployment completed successfully."
   deploy-alfuttaim:
 
     if: github.ref == 'refs/heads/alfuttaim'
