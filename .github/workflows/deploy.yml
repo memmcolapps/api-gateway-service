@@ -80,6 +80,7 @@ jobs:
       # =====================
       # Deploy API Gateway
       # =====================
+
       - name: Deploy API Gateway
         shell: bash
         env:
@@ -109,6 +110,7 @@ jobs:
           : "${KEYSTORE_ALIAS:?Missing keystore alias}"
           : "${KEYSTORE_PASSWORD:?Missing keystore password}"
           : "${KEYSTORE_TYPE:?Missing keystore type}"
+          : "${JAR_FILE:?Missing JAR_FILE}"
 
           SSH_PORT="${SSH_PORT:-22}"
           SERVER="${SERVER_USER}@${SERVER_HOST}"
@@ -133,12 +135,11 @@ jobs:
           echo "Target directory: ${APP_DIR}"
           echo "Spring profile: ${APP_PROFILE}"
 
-          # Prepare the deployment directory.
+          echo "Preparing deployment directory..."
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "mkdir -p '$APP_DIR'"
 
-          # Create the service only if it does not already exist.
-          # Preserve existing service configuration.
+          echo "Checking systemd service configuration..."
           ssh "${SSH_OPTS[@]}" "$SERVER" \
             "sudo bash -s -- '$SERVER_USER' '$APP_DIR' '$APP_PROFILE'" <<'REMOTE'
           set -euo pipefail
@@ -149,17 +150,17 @@ jobs:
 
           SERVICE_FILE="/etc/systemd/system/apigateway.service"
 
-          if ! sudo systemctl cat apigateway >/dev/null 2>&1; then
+          if ! systemctl cat apigateway >/dev/null 2>&1; then
             echo "Creating systemd service..."
 
-            JAVA_BIN="$(command -v java)"
+            JAVA_BIN="$(command -v java || true)"
 
             if [ -z "$JAVA_BIN" ]; then
-              echo "Java was not found on the server."
+              echo "ERROR: Java was not found on the server."
               exit 1
             fi
 
-            sudo tee "$SERVICE_FILE" >/dev/null <<UNIT
+            tee "$SERVICE_FILE" >/dev/null <<UNIT
           [Unit]
           Description=API Gateway Spring Boot Application
           Wants=network-online.target
@@ -180,19 +181,19 @@ jobs:
           WantedBy=multi-user.target
           UNIT
 
-            sudo systemctl daemon-reload
+            systemctl daemon-reload
           else
             echo "Existing systemd unit found; preserving its configuration."
           fi
 
-          sudo systemctl enable apigateway
+          systemctl enable apigateway
 
           echo "Stopping API Gateway before deployment..."
-          sudo systemctl stop apigateway
+          systemctl stop apigateway
           REMOTE
 
-          # Generate a systemd-compatible environment file.
-          # Do not print environment values or secrets.
+          echo "Generating environment file..."
+
           ENV_TMP="$(mktemp)"
           trap 'rm -f "$ENV_TMP"' EXIT
           export ENV_TMP
@@ -226,55 +227,45 @@ jobs:
             "$JAR_FILE" \
             "${SERVER}:${REMOTE_JAR}"
 
-          echo "Uploading environment file..."
+          echo "Uploading environment file with restricted permissions..."
           rsync -az \
+            --chmod=F600 \
             -e "$SSH_CMD" \
             "$ENV_TMP" \
             "${SERVER}:${REMOTE_ENV}"
 
-          echo "Restricting environment file permissions..."
+          echo "Verifying environment file permissions..."
           ssh "${SSH_OPTS[@]}" "$SERVER" \
-            "chmod 600 '$REMOTE_ENV'"
+            "stat -c '%a %U:%G %n' '$REMOTE_ENV'"
 
-          # Migration safeguard for processes left by the old nohup workflow.
-          # Ignore zombie processes and processes already managed by systemd.
+          echo "Checking for leftover legacy API Gateway processes..."
+
           ssh "${SSH_OPTS[@]}" "$SERVER" \
-            "bash -s -- '$REMOTE_JAR'" <<'REMOTE'
+            "sudo bash -s -- '$REMOTE_JAR'" <<'REMOTE'
           set -euo pipefail
 
           APP_JAR="$1"
 
+          # Match actual Java processes only, not shell commands containing the JAR path.
           mapfile -t PIDS < <(
-            ps -eo pid=,args= |
-              awk -v jar="$APP_JAR" '
-                index($0, jar) > 0 && /java/ { print $1 }
-              '
+            ps -eo pid=,comm=,args= |
+              awk -v jar="$APP_JAR" \
+                '$2 ~ /^java/ && index($0, jar) > 0 { print $1 }'
           )
 
           if [ "${#PIDS[@]}" -eq 0 ]; then
-            echo "No legacy API Gateway process found."
+            echo "No legacy API Gateway Java process found."
             exit 0
           fi
 
-          SERVICE_PID="$(sudo systemctl show apigateway -p MainPID --value)"
-
           for PID in "${PIDS[@]}"; do
-            if [ "$PID" = "$$" ] || [ "$PID" = "$PPID" ]; then
-              continue
-            fi
-
-            if [ "$PID" = "$SERVICE_PID" ] && [ "$SERVICE_PID" != "0" ]; then
-              echo "Skipping systemd-managed process $PID."
-              continue
-            fi
-
             STATE="$(ps -o stat= -p "$PID" 2>/dev/null | awk '{print $1}')"
 
             if [ -z "$STATE" ] || [[ "$STATE" == Z* ]]; then
               continue
             fi
 
-            echo "Stopping legacy API Gateway process $PID..."
+            echo "Sending TERM to legacy Java process $PID..."
             kill -TERM "$PID" 2>/dev/null || true
           done
 
@@ -300,8 +291,8 @@ jobs:
             STATE="$(ps -o stat= -p "$PID" 2>/dev/null | awk '{print $1}')"
 
             if [ -n "$STATE" ] && [[ "$STATE" != Z* ]]; then
-              echo "Legacy process $PID is still running (state: $STATE)."
-              exit 1
+              echo "Force-stopping remaining legacy process $PID..."
+              kill -KILL "$PID" 2>/dev/null || true
             fi
           done
 
@@ -324,7 +315,7 @@ jobs:
              done
              exit 1"; then
 
-            echo "API Gateway failed to become active."
+            echo "ERROR: API Gateway failed to become active."
 
             ssh "${SSH_OPTS[@]}" "$SERVER" \
               "sudo systemctl status apigateway --no-pager || true;
@@ -338,6 +329,7 @@ jobs:
             "sudo systemctl is-enabled apigateway"
 
           echo "API Gateway deployment completed successfully."
+
   deploy-alfuttaim:
 
     if: github.ref == 'refs/heads/alfuttaim'
